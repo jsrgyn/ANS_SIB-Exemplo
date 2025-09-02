@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- Definição do formato de troca de mensagens SIB-XML - Versão 1.2-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" version="1.2">
+	<!-- -->
+	<!-- Inclusão do arquivo simpleType-->
+	<xsd:include schemaLocation="sibSimpleType.xsd"/>
+	<!-- -->
+	<!-- Inclusão do arquivo complexType-->
+	<xsd:include schemaLocation="sibComplexType.xsd"/>
+	<!-- -->
+	<!-- -->
+	<xsd:element name="mensagemSIB">
+		<xsd:annotation>
+			<xsd:documentation>Estrutura do formulário</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="cabecalho" type="ct_cabecalho_transacao"/>
+				<xsd:element name="mensagem">
+					<xsd:complexType>
+						<xsd:choice>
+							<xsd:element name="operadoraParaANS">
+								<xsd:complexType>
+									<xsd:choice>
+										<xsd:element name="beneficiarios" type="ct_beneficiarios"/>
+										<xsd:element name="naoEnvioBeneficiarios" type="ct_nao_envio_beneficiarios"/>
+									</xsd:choice>
+								</xsd:complexType>
+							</xsd:element>
+							<xsd:element name="ansParaOperadora">
+								<xsd:complexType>
+									<xsd:choice>
+										<xsd:element name="resultadoProcessamento">
+											<xsd:complexType>
+												<xsd:choice>
+													<xsd:element name="arquivoProcessado" type="ct_resumo_processamento"/>
+													<xsd:element name="arquivoRejeitado">
+														<xsd:complexType>
+															<xsd:sequence>
+																<xsd:element name="nomeArquivo" type="xsd:string"/>
+																<xsd:element name="tamanhoArquivo" type="xsd:double"/>
+																<xsd:element name="dataHoraRecebimento" type="xsd:dateTime"/>
+																<xsd:element name="enderecoIPOrigem" type="xsd:string"/>
+																<xsd:element name="codigoMotivoRejeicao" type="st_cd_erro_rejeicao_arquivo"/>
+																<xsd:element name="motivoRejeicao" type="xsd:string"/>
+															</xsd:sequence>
+														</xsd:complexType>
+													</xsd:element>
+												</xsd:choice>
+											</xsd:complexType>
+										</xsd:element>
+										<xsd:element name="conferencia" type="ct_conferencia"/>
+										<xsd:element name="transferencia">
+											<xsd:complexType>
+												<xsd:sequence>
+													<xsd:element name="tab" type="ct_tab"/>
+													<xsd:choice>
+														<xsd:element name="conferencia" type="ct_conferencia_transferencia"/>
+													</xsd:choice>
+												</xsd:sequence>
+											</xsd:complexType>
+										</xsd:element>
+									</xsd:choice>
+								</xsd:complexType>
+							</xsd:element>
+						</xsd:choice>
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="epilogo" type="ct_epilogo"/>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

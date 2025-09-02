@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!--ARQUIVO DE EXEMPLO PARA VALIDAÇÃO DE HASH E SCHEMA NO APLICATIVO SIB-XML 1.0.1-->
+<mensagemSIB xmlns:ansSIB="http://www.ans.gov.br/padroes/sib/schemas" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.ans.gov.br/padroes/sib/schemas http://www.ans.gov.br/padroes/sib/schemas/sib.xsd">
+	<cabecalho>
+		<identificacaoTransacao>
+			<tipoTransacao>SIB</tipoTransacao>
+			<sequencialTransacao>0</sequencialTransacao>
+			<dataHoraRegistroTransacao>2011-05-16T09:00:00.0Z</dataHoraRegistroTransacao>
+		</identificacaoTransacao>
+		<origem>
+			<registroANS>000000</registroANS>
+		</origem>
+		<destino>
+			<cnpj>03589068000146</cnpj>
+		</destino>
+		<versaoPadrao>1.1</versaoPadrao>
+		<identificacaoSoftwareGerador>
+			<nomeAplicativo>TESTE</nomeAplicativo>
+			<versaoAplicativo>1</versaoAplicativo>
+			<fabricanteAplicativo>ANS</fabricanteAplicativo>
+		</identificacaoSoftwareGerador>
+	</cabecalho>
+	<mensagem>
+		<operadoraParaANS>
+			<beneficiarios>
+				<inclusao>
+					<identificacao>
+						<cpf>00000000000</cpf>
+						<dn>00000000000</dn>
+						<nome>NOME TESTE </nome>
+						<sexo>1</sexo>
+						<dataNascimento>1980-01-01</dataNascimento>
+						<nomeMae>NOME MAE TESTE </nomeMae>
+					</identificacao>
+					<endereco>
+						<logradouro>RUA TESTE</logradouro>
+						<numero>000</numero>
+						<bairro>BARRA</bairro>
+						<codigoMunicipio>000000</codigoMunicipio>
+						<codigoMunicipioResidencia>000000</codigoMunicipioResidencia>
+						<cep>00000000</cep>
+						<tipoEndereco>1</tipoEndereco>
+						<resideExterior>0</resideExterior>
+					</endereco>
+					<vinculo>
+						<codigoBeneficiario>000</codigoBeneficiario>
+						<relacaoDependencia>1</relacaoDependencia>
+						<dataContratacao>2000-01-01</dataContratacao>
+						<numeroPlanoANS>000000000</numeroPlanoANS>
+						<coberturaParcialTemporaria>0</coberturaParcialTemporaria>
+						<itensExcluidosCobertura>0</itensExcluidosCobertura>
+					</vinculo>
+				</inclusao>
+				<cancelamento>
+					<cco>000000000000</cco>
+					<dataCancelamento>2000-01-01</dataCancelamento>
+					<motivoCancelamento>41</motivoCancelamento>
+				</cancelamento>
+				<reativacao>
+					<cco>000000000000</cco>
+					<dataReativacao>2000-01-01</dataReativacao>
+				</reativacao>
+				<mudancaContratual>
+					<cco>000000000000</cco>
+					<relacaoDependencia>1</relacaoDependencia>
+					<dataContratacao>2000-01-01</dataContratacao>
+					<numeroPlanoANS>000000000</numeroPlanoANS>
+					<coberturaParcialTemporaria>0</coberturaParcialTemporaria>
+					<itensExcluidosCobertura>0</itensExcluidosCobertura>
+				</mudancaContratual>
+				<retificacao>
+					<cco>000000000000</cco>
+					<identificacao>
+						<cpf>00000000000</cpf>
+						<dn>00000000000</dn>
+						<nome>NOME TESTE </nome>
+						<sexo>1</sexo>
+						<dataNascimento>1980-01-01</dataNascimento>
+						<nomeMae>NOME MAE TESTE </nomeMae>
+					</identificacao>
+					<endereco>
+						<logradouro>RUA TEST</logradouro>
+						<numero>000</numero>
+						<bairro>BARRA</bairro>
+						<codigoMunicipio>000000</codigoMunicipio>
+						<codigoMunicipioResidencia>000000</codigoMunicipioResidencia>
+						<cep>00000000</cep>
+						<tipoEndereco>1</tipoEndereco>
+						<resideExterior>0</resideExterior>
+					</endereco>
+					<vinculo>
+						<codigoBeneficiario>000</codigoBeneficiario>
+						<relacaoDependencia>1</relacaoDependencia>
+						<dataContratacao>2000-01-01</dataContratacao>
+						<numeroPlanoANS>000000000</numeroPlanoANS>
+						<coberturaParcialTemporaria>0</coberturaParcialTemporaria>
+						<itensExcluidosCobertura>0</itensExcluidosCobertura>
+					</vinculo>
+				</retificacao>
+			</beneficiarios>
+		</operadoraParaANS>
+	</mensagem>
+	<!-- 
+
+		**** OBSERVAÇÃO IMPORTANTE ****
+
+		O VALOR DO EPILOGO/HASH (8ADF49BC99D6F95642EC093B2E958D5B) FOI CALCULADO UTILIZANDO O ALGORITMO MD5,
+		 A PARTIR DA STRING ABAIXO:
+		
+		http://www.ans.gov.br/padroes/sib/schemas http://www.ans.gov.br/padroes/sib/schemas/sib.xsdSIB02011-05-16T09:00:00.0Z000000035890680001461.1TESTE1ANS0000000000000000000000NOME TESTE 11980-01-01NOME MAE TESTE RUA TESTE000BARRA000000000000000000001000012000-01-01000000000000000000000002000-01-01410000000000002000-01-0100000000000012000-01-01000000000000000000000000000000000000000000000NOME TESTE 11980-01-01NOME MAE TESTE RUA TEST000BARRA000000000000000000001000012000-01-0100000000000
+
+		A STRING CONSISTE NA CONCATENAÇÃO DO CONTEÚDO DE TODOS OS ELEMENTOS E ATRIBUTOS, NA MESMA ORDEM 
+		DE OCORRENCIA, COM EXCEÇÃO DOS ATRIBUTOS E ELEMENTOS SEM CONTEÚDO (OU AQUELES QUE CONTÉM APENAS 
+		CARACTERES "NÃO SIGNIFICATIVOS", TAIS COMO: ESPAÇO, TABULAÇÃO E RETORNO DE LINHA OU OUTROS CARACTERES 
+		GERALMENTE UTILIZADOS PARA FORMATAÇÃO VISUAL DO XML. O ELEMENTO "EPILOGO" 	TAMBÉM NÃO DEVE SER 
+		CONSIDERADO NO CALCÚLO. VALE LEMBRAR QUE TODOS OS ATRIBUTOS DEVEM ENTRAR NO CALCULO.
+
+	-->
+	<epilogo>
+		<hash>8ADF49BC99D6F95642EC093B2E958D5B</hash>
+	</epilogo>
+</mensagemSIB>

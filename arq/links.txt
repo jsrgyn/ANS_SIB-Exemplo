@@ -1,0 +1,16 @@
+https://www.gov.br/ans/pt-br/centrais-de-conteudo/manuais-do-portal-operadoras/sib-manual-de-instalacao-historico-de-versao-e-outros-arquivos/sistema-de-informacao-de-beneficiarios-sib
+
+Clique aqui para acessar a Estrutura XSD do SIB
+O arquivo XSD (ou Esquema XML, do inglês XML Schema) descreve a estrutura (metadados) de um arquivo XML.
+
+Nos links desta seção, está disponível a estrutura XSD do SIB para consulta das definições do padrão de arquivos (SBX, RPX e CNX) da aplicação.
+
+https://www.gov.br/ans/pt-br/arquivos/assuntos/espaco-da-operadora-de-plano-de-saude/aplicativos-ans/sib/sib.xsd
+
+https://www.gov.br/ans/pt-br/arquivos/assuntos/espaco-da-operadora-de-plano-de-saude/aplicativos-ans/sib/sibComplexType.xsd
+
+https://www.gov.br/ans/pt-br/arquivos/assuntos/espaco-da-operadora-de-plano-de-saude/aplicativos-ans/sib/sibSimpleType.xsd
+
+[PDF]
+https://www.gov.br/ans/pt-br/arquivos/assuntos/espaco-da-operadora-de-plano-de-saude/aplicativos-ans/sib/17012019-sib-instrucoes-xml.pdf
+
