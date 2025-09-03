@@ -1,0 +1,489 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Definição do formato de troca de mensagens SIB-XML - Versão 1.2 -->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xsd:simpleType name="st_cd_cco">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código CCO</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_beneficiario_operadora">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do beneficiário na operadora</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="30"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nu_raiz_cnpj">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do raiz do CNPJ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{8}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_cnpj">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do CNPJ</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{14}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_cei">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do CEI</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{12}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_caepf">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do CAEPF</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{14}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_repad">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do repad</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{20}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_cpf">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do CPF</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{11}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_dn">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número da Declaração de Nascido Vivo (DN)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{11}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_pis_pasep">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do PIS/PASEP</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{11}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_cartao_nacional_saude">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do Cartão Nacional de Saúde</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{15}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_no_pessoa">
+		<xsd:annotation>
+			<xsd:documentation>Tipo nome de pessoas (genérico)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="3"/>
+			<xsd:maxLength value="70"/>
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[a-zA-ZãÃáÁàÀâÂäÄéÉèÈêÊëËÚúíÍóÓõÕôÔöÖüÜñÑçÇ' ]*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_adesao">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de adesão</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_cancelamento">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de cancelamento</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_efetiva_transferencia">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de efetivacao de transferencia</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_execucao_processo">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de execucao de processo</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_reativacao">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de reativação</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_migracao">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de migração</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_nascimento">
+		<xsd:annotation>
+			<xsd:documentation>Tipo data de nascimento</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1890-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_sexo">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do sexo</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="3"/>
+			<!--1 - Masculino / 3 - Feminino-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_no_logradouro">
+		<xsd:annotation>
+			<xsd:documentation>Tipo nome do logradouro</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="50"/>
+			<xsd:whiteSpace value="preserve"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_logradouro">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do logradouro</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="5"/>
+			<xsd:whiteSpace value="preserve"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_no_complemento_logradouro">
+		<xsd:annotation>
+			<xsd:documentation>Tipo nome do complemento do logradouro</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="0"/>
+			<xsd:maxLength value="15"/>
+			<xsd:whiteSpace value="preserve"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_no_bairro">
+		<xsd:annotation>
+			<xsd:documentation>Tipo nome do bairro</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="30"/>
+			<xsd:whiteSpace value="preserve"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_municipio_ibge">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do município da tabela do IBGE</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{6}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_tp_endereco">
+		<xsd:annotation>
+			<xsd:documentation>Tipo indicador do tipo de endereço</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<!--1 - Comercial-->
+			<!--2 - Residencial-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_cep">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código de endereçamento postal (CEP)</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{8}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_in_reside_exterior">
+		<xsd:annotation>
+			<xsd:documentation>Tipo indicador de residência no exterior</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<!--0 - Não reside no exterior-->
+			<!--1 - Reside no exterior-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_in_cobertura_parcial_temporaria">
+		<xsd:annotation>
+			<xsd:documentation>Tipo indicador de existência de cobertura parcial temporária</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<!--0 - Não possui cobertura parcial temporaria-->
+			<!--1 - Possui cobertura parcial temporaria-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_in_itens_excluidos_cobertura">
+		<xsd:annotation>
+			<xsd:documentation>Tipo indicador de ítens excluídos da cobertura</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<!--0 - Não possui ítens excluídos da cobertura-->
+			<!--1 - Possui ítens excluídos da cobertura-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_in_erro_conferencia">
+		<xsd:annotation>
+			<xsd:documentation>Tipo indicador de erro de preenchimento</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="0"/>
+			<xsd:enumeration value="1"/>
+			<!--0 - Não possui erros-->
+			<!--1 - Possui erros-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_motivo_nao_envio_beneficiarios">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do motivo do não envio de beneficiários</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="61"/>
+			<xsd:enumeration value="62"/>
+			<!--61 - Inexistência de beneficiários na competência-->
+			<!--62 - Inexistência de Atualização cadastral na competência-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_plano_rps">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do plano no RPS</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:pattern value="[0-9]{9}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_plano_operadora">
+		<xsd:annotation>
+			<xsd:documentation>Tipo número do plano da operadora</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:whiteSpace value="preserve"/>
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="20"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_tipo_relacao_dependencia">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do tipo de relação de dependencia</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+			<xsd:enumeration value="6"/>
+			<xsd:enumeration value="8"/>
+			<xsd:enumeration value="10"/>
+			<!--1 - BENEFICIARIO TITULAR-->
+			<!--3 - CONJUGE/COMPANHEIRO-->
+			<!--4 - FILHO/FILHA-->
+			<!--6 - ENTEADO/ENTEADA-->
+			<!--8 - PAI/MAE-->
+			<!--10 - AGREGADO/OUTROS -->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_motivo_cancelamento">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do motivo de cancelamento</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="41"/>
+			<xsd:enumeration value="42"/>
+			<xsd:enumeration value="43"/>
+			<xsd:enumeration value="44"/>
+			<xsd:enumeration value="46"/>
+			<xsd:enumeration value="47"/>
+			<xsd:enumeration value="48"/>
+			<!--41 - Rompimento do contrato por iniciativa do beneficiário -->
+			<!--42 - Desligamento da empresa (para planos coletivos). -->
+			<!--43 - Inadimplência.-->
+			<!--44 - Obito.-->
+			<!--46 - Inclusão indevida de beneficiários.-->
+			<!--47 - Fraude (art. 13 da Lei nº 9.656/98).-->
+			<!--48 - Por portabilidade de carência-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_erro">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do erro</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{4}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_no_erro">
+		<xsd:annotation>
+			<xsd:documentation>Tipo nome do erro</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="200"/>
+			<xsd:whiteSpace value="preserve"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_no_campo">
+		<xsd:annotation>
+			<xsd:documentation>Tipo nome do campo</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1"/>
+			<xsd:maxLength value="70"/>
+			<xsd:whiteSpace value="preserve"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_campo">
+		<xsd:annotation>
+			<xsd:documentation>Tipo código do campo</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{2}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_registro_ans">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[0-9]{6}"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_descricao_falha">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_fabricante_aplicativo">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_falha_negocio">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_protocolo">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_sequencial_transacao">
+		<xsd:restriction base="xsd:integer"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_tp_transacao">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_nr_versao">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="1.1"/>
+			<!--VERSÕES VÁLIDAS E ATUAIS DO XSD ACEITAS PELO SISTEMA-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_hash">
+		<xsd:restriction base="xsd:string"/>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_erro_rejeicao_arquivo">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="16"/>
+			<xsd:enumeration value="17"/>
+			<xsd:enumeration value="18"/>
+			<xsd:enumeration value="19"/>
+			<xsd:enumeration value="22"/>
+			<xsd:enumeration value="23"/>
+			<xsd:enumeration value="24"/>
+			<xsd:enumeration value="26"/>
+			<xsd:enumeration value="20"/>
+			<xsd:enumeration value="21"/>
+			<!--16 - ERRO_VALIDACAO_XSD-->
+			<!--17 - ERRO_CABECALHO_REGISTRO_ANS_ORIGEM_NAO_INFORMADO-->
+			<!--18 - ERRO_CABECALHO_REGISTRO_ANS_INCOERENTE-->
+			<!--19 - ERRO_CABECALHO_REGISTRO_ANS_OPERADORA_INATIVA-->
+			<!--22 - ERRO_CABECALHO_CNPJ_ANS_NAO_INFORMADO-->
+			<!--23 - ERRO_CABECALHO_CNPJ_ANS_INCORRETO-->
+			<!--24 - ERRO_CABECALHO_VERSAO_PADRAO_INCORRETA-->
+			<!--26 - ERRO_NOME_ARQUIVO_INVALIDO-->
+			<!--20 - ERRO_EPILOGO_HASH_INVALIDO-->
+			<!--21 - ERRO_QUANTIDADE_REGISTROS_ACIMA_PERMITIDA-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_cd_tipo_movimento">
+		<xsd:restriction base="xsd:integer">
+			<xsd:enumeration value="1"/>
+			<xsd:enumeration value="2"/>
+			<xsd:enumeration value="3"/>
+			<xsd:enumeration value="4"/>
+			<xsd:enumeration value="5"/>
+			<xsd:enumeration value="6"/>
+			<!--1 - INCLUSAO-->
+			<!--2 - RETIFICAÇÃO-->
+			<!--3 - MUDANÇA CONTRATUAL-->
+			<!--4 - CANCELAMENTO-->
+			<!--5 - REATIVAÇÃO-->
+			<!--6 - SEM MOVIMENTAÇÃO-->
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="st_situacao_transferencia">
+		<xsd:annotation>
+			<xsd:documentation>Situação do beneficiário após processo de transferência automática</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:string"/>
+		<!--1 - transferido - Transferido normalmente -->
+		<!--2 - cancelado - Cancelado no cedente por duplicidade de beneficiário no adquirente -->
+	</xsd:simpleType>
+	<xsd:simpleType name="st_dt_primeira_contratacao">
+		<xsd:annotation>
+			<xsd:documentation>Data da Primeira Contratação</xsd:documentation>
+		</xsd:annotation>
+		<xsd:restriction base="xsd:date">
+			<xsd:minInclusive value="1940-01-01"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+</xsd:schema>

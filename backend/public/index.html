@@ -14,16 +14,27 @@
 
 <body>
   <div id="root"></div>
-  
+
   <script type="text/babel">
     const { useState } = React;
 
     function App() {
-      const [file, setFile] = useState(null);
-      const [xml, setXml] = useState("");
-      const [isValid, setIsValid] = useState(null);
-      const [loading, setLoading] = useState(false);
-      const [error, setError] = useState("");
+      const [file, setFile] = React.useState(null);
+      const [xml, setXml] = React.useState("");
+      const [isValid, setIsValid] = React.useState(null);
+      const [fileName, setFileName] = React.useState("");
+
+      const [loading, setLoading] = React.useState(false);
+      const [error, setError] = React.useState("");
+
+      // Novos estados para os campos adicionais
+      const [sequencialTransacao, setSequencialTransacao] = React.useState(1);
+      const [registroANS, setRegistroANS] = React.useState("");
+      const [nomeAplicativo, setNomeAplicativo] = React.useState("");
+      const [fabricanteAplicativo, setFabricanteAplicativo] = React.useState("");
+      const [motivoNaoEnvioBeneficiarios, setMotivoNaoEnvioBeneficiarios] = React.useState("");
+      const [tipoTransacao] = React.useState("ATUALIZACAO SIB");
+      const [cnpjDestino] = React.useState("03589068000146");
 
       const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -31,30 +42,66 @@
       };
 
       const handleUpload = async () => {
-        if (!file) {
-          setError("Por favor, selecione um arquivo CSV");
+        if ((motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62") && file) {
+          setError("Não é necessário importar arquivo de beneficiários para o motivo selecionado.");
           return;
         }
-        
+
+        if (!file && motivoNaoEnvioBeneficiarios === "") {
+          setError("Por favor, selecione um arquivo CSV ou informe o motivo de não envio.");
+          return;
+        }
+
+        if (!registroANS || !nomeAplicativo || !fabricanteAplicativo) {
+          setError("Por favor, preencha todos os campos obrigatórios");
+          return;
+        }
+
         setLoading(true);
         setError("");
-        
+
         try {
-          const formData = new FormData();
-          formData.append("file", file);
-          
-          const uploadRes = await axios.post("/api/csv/upload", formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          });
-          
-          const processRes = await axios.post("/api/csv/process", { 
-            filePath: uploadRes.data.filePath 
-          });
-          
-          setXml(processRes.data.xml);
-          setIsValid(processRes.data.isValid);
+          let xmlResponse;
+          if (motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62") {
+            // Gerar XML sem arquivo de beneficiários, apenas com motivoNaoEnvioBeneficiarios
+            const response = await axios.post("/api/csv/process", {
+              sequencialTransacao,
+              registroANS,
+              nomeAplicativo,
+              fabricanteAplicativo,
+              motivoNaoEnvioBeneficiarios,
+              cnpjDestino,
+            });
+            xmlResponse = response.data;
+          } else {
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("sequencialTransacao", sequencialTransacao);
+            formData.append("registroANS", registroANS);
+            formData.append("nomeAplicativo", nomeAplicativo);
+            formData.append("fabricanteAplicativo", fabricanteAplicativo);
+            formData.append("cnpjDestino", cnpjDestino);
+
+            const uploadRes = await axios.post("/api/csv/upload", formData, {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            });
+
+            const processRes = await axios.post("/api/csv/process", {
+              filePath: uploadRes.data.filePath,
+              sequencialTransacao,
+              registroANS,
+              nomeAplicativo,
+              fabricanteAplicativo,
+              cnpjDestino,
+            });
+            xmlResponse = processRes.data;
+          }
+
+          setXml(xmlResponse.xml);
+          setIsValid(xmlResponse.isValid);
+          setFileName(xmlResponse.fileName);
         } catch (err) {
           setError(err.response?.data?.error || "Erro ao processar arquivo");
         } finally {
@@ -67,7 +114,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "beneficiarios_sib.xml";
+        a.download = fileName || "beneficiarios_sib.xml";
         a.click();
         URL.revokeObjectURL(url);
       };
@@ -79,37 +126,144 @@
               <div className="card">
                 <div className="card-header">
                   <h3 className="card-title mb-0">
-                    <i className="bi bi-file-earmark-medical"></i> 
+                    <i className="bi bi-file-earmark-medical"></i>
                     ANS SIB - Gerador de XML de Beneficiários
                   </h3>
                 </div>
                 <div className="card-body">
+                  <div className="mb-3">
+                    <label htmlFor="sequencialTransacao" className="form-label">Sequencial da Transação</label>
+                    <input
+                      type="number"
+                      id="sequencialTransacao"
+                      className="form-control"
+                      value={sequencialTransacao}
+                      onChange={(e) => setSequencialTransacao(e.target.value)}
+                      min={1}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="registroANS" className="form-label">Registro ANS</label>
+                    <input
+                      type="text"
+                      id="registroANS"
+                      className="form-control"
+                      value={registroANS}
+                      onChange={(e) => setRegistroANS(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="nomeAplicativo" className="form-label">Nome do Aplicativo</label>
+                    <input
+                      type="text"
+                      id="nomeAplicativo"
+                      className="form-control"
+                      value={nomeAplicativo}
+                      onChange={(e) => setNomeAplicativo(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="fabricanteAplicativo" className="form-label">Fabricante do Aplicativo</label>
+                    <input
+                      type="text"
+                      id="fabricanteAplicativo"
+                      className="form-control"
+                      value={fabricanteAplicativo}
+                      onChange={(e) => setFabricanteAplicativo(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="motivoNaoEnvioBeneficiarios" className="form-label">Código de Não Envio de Beneficiários</label>
+                    <select
+                      id="motivoNaoEnvioBeneficiarios"
+                      className="form-select"
+                      value={motivoNaoEnvioBeneficiarios}
+                      onChange={(e) => setMotivoNaoEnvioBeneficiarios(e.target.value)}
+                    >
+                      <option value="">-- Selecione --</option>
+                      <option value="61">61 - Inexistência de beneficiários na competência</option>
+                      <option value="62">62 - Inexistência de Atualização cadastral na competência</option>
+                    </select>
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="tipoTransacao" className="form-label">Tipo de Transação</label>
+                    <input
+                      type="text"
+                      id="tipoTransacao"
+                      className="form-control"
+                      value={tipoTransacao}
+                      readOnly
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="cnpjDestino" className="form-label">CNPJ Destino</label>
+                    <input
+                      type="text"
+                      id="cnpjDestino"
+                      className="form-control"
+                      value={cnpjDestino}
+                      readOnly
+                    />
+                  </div>
                   <div className="mb-4">
                     <label htmlFor="csvFile" className="form-label">
                       Selecione o arquivo CSV com dados dos beneficiários:
                     </label>
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       id="csvFile"
-                      accept=".csv" 
-                      onChange={handleFileChange} 
-                      className="form-control" 
+                      accept=".csv"
+                      onChange={handleFileChange}
+                      className="form-control"
+                      disabled={motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62"}
                     />
                     <div className="form-text">
                       Arquivo deve conter as colunas: Nome, CPF, DataNascimento, etc.
                     </div>
                   </div>
-                  
+
+                  <div className="mb-3">
+                    <label htmlFor="xmlFile" className="form-label">Upload XML para validação</label>
+                    <input
+                      type="file"
+                      id="xmlFile"
+                      accept=".xml"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = async (event) => {
+                          const xmlContent = event.target.result;
+                          try {
+                            const response = await axios.post('/api/xml/validate', { xml: xmlContent });
+                            if (response.data.isValid) {
+                              alert('XML válido!');
+                            } else {
+                              alert('XML inválido! Erros: ' + response.data.errors.map(e => e.message || e).join(', '));
+                            }
+                          } catch (error) {
+                            alert('Erro ao validar XML: ' + error.message);
+                          }
+                        };
+                        reader.readAsText(file);
+                      }}
+                      className="form-control"
+                    />
+                  </div>
+
                   {error && (
                     <div className="alert alert-danger" role="alert">
                       <i className="bi bi-exclamation-triangle"></i> {error}
                     </div>
                   )}
-                  
-                  <button 
-                    className="btn btn-primary btn-lg w-100" 
-                    onClick={handleUpload} 
-                    disabled={loading || !file}
+
+                  <button
+                    className="btn btn-primary btn-lg w-100"
+                    onClick={handleUpload}
+                    disabled={loading || (!file && motivoNaoEnvioBeneficiarios === "")}
                   >
                     {loading ? (
                       <>
@@ -122,7 +276,7 @@
                       </>
                     )}
                   </button>
-                  
+
                   {isValid !== null && (
                     <div className={`alert mt-4 ${isValid ? "alert-success" : "alert-danger"}`}>
                       <h6 className="alert-heading">
@@ -135,11 +289,11 @@
                       XML {isValid ? "está conforme" : "não está conforme"} os schemas XSD da ANS
                     </div>
                   )}
-                  
+
                   {xml && (
                     <div className="mt-4">
-                      <button 
-                        className="btn btn-success btn-lg w-100" 
+                      <button
+                        className="btn btn-success btn-lg w-100"
                         onClick={handleDownload}
                       >
                         <i className="bi bi-download"></i> Download XML
@@ -147,7 +301,7 @@
                     </div>
                   )}
                 </div>
-                
+
                 <div className="card-footer text-muted">
                   <small>
                     Sistema de geração de XML conforme especificações ANS/SIB |
@@ -166,7 +320,7 @@
     const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<App />);
   </script>
-  
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 </body>
 
