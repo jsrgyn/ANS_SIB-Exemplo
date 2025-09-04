@@ -34,7 +34,7 @@ export const processCSV = async (req, res) => {
       tipoTransacao = "ATUALIZACAO SIB",
       versaoPadrao = "1.1",
       versaoAplicativo = "1.00",
-    } = req.body;
+    } = req.body;   
 
     if (
       motivoNaoEnvioBeneficiarios === "61" ||
@@ -47,6 +47,7 @@ export const processCSV = async (req, res) => {
         nomeAplicativo,
         fabricanteAplicativo,
         motivoNaoEnvioBeneficiarios,
+        cnpjDestino,
       });
       // Extrair dataHoraRegistroTransacao para nome do arquivo
       const match = xml.match(/<dataHoraTransacao>(.*?)<\/dataHoraTransacao>/);

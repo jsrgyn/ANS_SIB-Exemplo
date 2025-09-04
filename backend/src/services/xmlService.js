@@ -2,31 +2,39 @@ import { create } from "xmlbuilder2";
 import crypto from "crypto";
 
 // Função para concatenar o conteúdo de todos elementos e atributos na ordem de ocorrência, ignorando elementos vazios e epilogo
-function concatenateContent(node) {
+function concatenateContent(domNode) {
   let result = "";
 
-  // Concatenar atributos em ordem
-  if (node.attrs) {
-    const attrs = Object.entries(node.attrs).sort((a, b) =>
-      a[0].localeCompare(b[0]),
-    );
-    for (const [, value] of attrs) {
-      if (value && value.trim() !== "") {
-        result += value.trim();
+  if (domNode.nodeType !== 1) {
+    // Não é um elemento
+    return "";
+  }
+
+  // Processa atributos em ordem alfabética
+  if (domNode.attributes) {
+    const attrs = Array.from(domNode.attributes);
+    attrs.sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const attr of attrs) {
+      const value = (attr.value || "").trim();
+      if (value) {
+        result += value;
       }
     }
   }
 
-  // Concatenar texto do nó
-  if (node.text && node.text().trim() !== "") {
-    result += node.text().trim();
-  }
-
-  // Recursivamente concatenar filhos
-  if (node.children) {
-    for (const child of node.children()) {
-      if (child.type === "element" && child.node.nodeName !== "epilogo") {
-        result += concatenateContent(child.node);
+  // Processa nós filhos
+  for (const child of domNode.childNodes) {
+    if (child.nodeType === 1) {
+      // Elemento
+      if (child.nodeName !== "epilogo") {
+        result += concatenateContent(child);
+      }
+    } else if (child.nodeType === 3) {
+      // Texto
+      const text = (child.nodeValue || "").trim();
+      if (text) {
+        result += text;
       }
     }
   }
@@ -58,6 +66,8 @@ export const generateXML = (jsonData, options = {}) => {
 
   const dataAtual = new Date().toISOString().slice(0, 19);
 
+  // Inserir o valor do cnpjDestino na tag <cnpj> do XML
+  const cnpjDestinoValue = cnpjDestino || ""; // Valor passado na função ou vazio
   const root = create({ version: "1.0", encoding: "ISO-8859-1" })
     .ele("mensagemSIB")
     .ele("cabecalho")
@@ -79,7 +89,7 @@ export const generateXML = (jsonData, options = {}) => {
     .up()
     .ele("destino")
     .ele("cnpj")
-    .txt(cnpjDestino || "")
+    .txt(cnpjDestinoValue)
     .up()
     .up()
     .ele("versaoPadrao")
@@ -144,14 +154,11 @@ export const generateXML = (jsonData, options = {}) => {
   }
 
   // Gerar string XML temporária sem epilogo
-  const xmlWithoutEpilogo = root.up().up().up().end({ prettyPrint: true });
+  const doc = root.doc();
+  const xmlWithoutEpilogo = doc.end({ prettyPrint: true });
 
-  // Parsear XML para concatenar conteúdo
-  const doc = create(xmlWithoutEpilogo);
-  const concatenatedString =
-    "http://www.ans.gov.br/padroes/sib/schemas " +
-    "http://www.ans.gov.br/padroes/sib/schemas/sib.xsd" +
-    concatenateContent(doc.root());
+  // Concatenar conteúdo para o hash
+  const concatenatedString = concatenateContent(doc.root().node);
 
   // Gerar hash MD5
   const hash = generateMD5Hash(concatenatedString);
