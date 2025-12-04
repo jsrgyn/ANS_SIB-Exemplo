@@ -1,12 +1,11 @@
 import { create } from "xmlbuilder2";
 import crypto from "crypto";
 
-// Função para concatenar o conteúdo de todos elementos e atributos na ordem de ocorrência, ignorando elementos vazios e epilogo
+// Função para concatenar o conteúdo de todos elementos e atributos na ordem de ocorrência
 function concatenateContent(domNode) {
   let result = "";
 
   if (domNode.nodeType !== 1) {
-    // Não é um elemento
     return "";
   }
 
@@ -42,7 +41,7 @@ function concatenateContent(domNode) {
   return result;
 }
 
-// Função para gerar hash MD5 da string concatenada
+// Função para gerar hash MD5
 function generateMD5Hash(str) {
   return crypto
     .createHash("md5")
@@ -51,7 +50,167 @@ function generateMD5Hash(str) {
     .toUpperCase();
 }
 
-export const generateXML = (jsonData, options = {}) => {
+// Função para gerar elemento de inclusão
+function generateInclusaoElement(parent, dados) {
+  const inclusao = parent.ele("inclusao");
+
+  // Elemento identificacao
+  const identificacao = inclusao.ele("identificacao");
+  if (dados.identificacao.cpf)
+    identificacao.ele("cpf").txt(dados.identificacao.cpf);
+  if (dados.identificacao.dn)
+    identificacao.ele("dn").txt(dados.identificacao.dn);
+  if (dados.identificacao.pisPasep)
+    identificacao.ele("pisPasep").txt(dados.identificacao.pisPasep);
+  if (dados.identificacao.cns)
+    identificacao.ele("cns").txt(dados.identificacao.cns);
+  identificacao.ele("nome").txt(dados.identificacao.nome);
+  identificacao.ele("sexo").txt(dados.identificacao.sexo);
+  identificacao.ele("dataNascimento").txt(dados.identificacao.dataNascimento);
+  if (dados.identificacao.nomeMae)
+    identificacao.ele("nomeMae").txt(dados.identificacao.nomeMae);
+
+  // Elemento endereco
+  const endereco = inclusao.ele("endereco");
+  if (dados.endereco.logradouro)
+    endereco.ele("logradouro").txt(dados.endereco.logradouro);
+  if (dados.endereco.numero) endereco.ele("numero").txt(dados.endereco.numero);
+  if (dados.endereco.complemento)
+    endereco.ele("complemento").txt(dados.endereco.complemento);
+  if (dados.endereco.bairro) endereco.ele("bairro").txt(dados.endereco.bairro);
+  endereco.ele("codigoMunicipio").txt(dados.endereco.codigoMunicipio);
+  if (dados.endereco.codigoMunicipioResidencia)
+    endereco
+      .ele("codigoMunicipioResidencia")
+      .txt(dados.endereco.codigoMunicipioResidencia);
+  if (dados.endereco.cep) endereco.ele("cep").txt(dados.endereco.cep);
+  if (dados.endereco.tipoEndereco)
+    endereco.ele("tipoEndereco").txt(dados.endereco.tipoEndereco);
+  endereco.ele("resideExterior").txt(dados.endereco.resideExterior || "0");
+
+  // Elemento vinculo
+  const vinculo = inclusao.ele("vinculo");
+  vinculo.ele("codigoBeneficiario").txt(dados.vinculo.codigoBeneficiario);
+  vinculo.ele("relacaoDependencia").txt(dados.vinculo.relacaoDependencia);
+  vinculo.ele("dataContratacao").txt(dados.vinculo.dataContratacao);
+  vinculo.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
+  vinculo
+    .ele("coberturaParcialTemporaria")
+    .txt(dados.vinculo.coberturaParcialTemporaria);
+  vinculo
+    .ele("itensExcluidosCobertura")
+    .txt(dados.vinculo.itensExcluidosCobertura);
+
+  return inclusao;
+}
+
+// Função para gerar elemento de retificação
+function generateRetificacaoElement(parent, dados) {
+  const retificacao = parent.ele("retificacao");
+
+  retificacao.ele("cco").txt(dados.retificacao.cco);
+
+  // Elemento identificacao
+  const identificacao = retificacao.ele("identificacao");
+  if (dados.identificacao.cpf)
+    identificacao.ele("cpf").txt(dados.identificacao.cpf);
+  if (dados.identificacao.dn)
+    identificacao.ele("dn").txt(dados.identificacao.dn);
+  if (dados.identificacao.pisPasep)
+    identificacao.ele("pisPasep").txt(dados.identificacao.pisPasep);
+  if (dados.identificacao.cns)
+    identificacao.ele("cns").txt(dados.identificacao.cns);
+  if (dados.identificacao.nome)
+    identificacao.ele("nome").txt(dados.identificacao.nome);
+  if (dados.identificacao.sexo)
+    identificacao.ele("sexo").txt(dados.identificacao.sexo);
+  if (dados.identificacao.dataNascimento)
+    identificacao.ele("dataNascimento").txt(dados.identificacao.dataNascimento);
+  if (dados.identificacao.nomeMae)
+    identificacao.ele("nomeMae").txt(dados.identificacao.nomeMae);
+
+  // Elemento endereco
+  const endereco = retificacao.ele("endereco");
+  if (dados.endereco.logradouro)
+    endereco.ele("logradouro").txt(dados.endereco.logradouro);
+  if (dados.endereco.numero) endereco.ele("numero").txt(dados.endereco.numero);
+  if (dados.endereco.complemento)
+    endereco.ele("complemento").txt(dados.endereco.complemento);
+  if (dados.endereco.bairro) endereco.ele("bairro").txt(dados.endereco.bairro);
+  if (dados.endereco.codigoMunicipio)
+    endereco.ele("codigoMunicipio").txt(dados.endereco.codigoMunicipio);
+  if (dados.endereco.codigoMunicipioResidencia)
+    endereco
+      .ele("codigoMunicipioResidencia")
+      .txt(dados.endereco.codigoMunicipioResidencia);
+  if (dados.endereco.cep) endereco.ele("cep").txt(dados.endereco.cep);
+  if (dados.endereco.tipoEndereco)
+    endereco.ele("tipoEndereco").txt(dados.endereco.tipoEndereco);
+  if (dados.endereco.resideExterior)
+    endereco.ele("resideExterior").txt(dados.endereco.resideExterior);
+
+  // Elemento vinculo
+  const vinculo = retificacao.ele("vinculo");
+  if (dados.vinculo.codigoBeneficiario)
+    vinculo.ele("codigoBeneficiario").txt(dados.vinculo.codigoBeneficiario);
+  if (dados.vinculo.relacaoDependencia)
+    vinculo.ele("relacaoDependencia").txt(dados.vinculo.relacaoDependencia);
+  if (dados.vinculo.dataContratacao)
+    vinculo.ele("dataContratacao").txt(dados.vinculo.dataContratacao);
+  if (dados.vinculo.numeroPlanoANS)
+    vinculo.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
+  if (dados.vinculo.coberturaParcialTemporaria)
+    vinculo
+      .ele("coberturaParcialTemporaria")
+      .txt(dados.vinculo.coberturaParcialTemporaria);
+  if (dados.vinculo.itensExcluidosCobertura)
+    vinculo
+      .ele("itensExcluidosCobertura")
+      .txt(dados.vinculo.itensExcluidosCobertura);
+
+  if (dados.retificacao.codigoProcedimentoAdministrativo) {
+    retificacao
+      .ele("codigoProcedimentoAdministrativo")
+      .txt(dados.retificacao.codigoProcedimentoAdministrativo);
+  }
+
+  return retificacao;
+}
+
+// Função para gerar elemento de cancelamento
+function generateCancelamentoElement(parent, dados) {
+  const cancelamento = parent.ele("cancelamento");
+
+  cancelamento.ele("cco").txt(dados.cancelamento.cco);
+  cancelamento.ele("dataCancelamento").txt(dados.cancelamento.dataCancelamento);
+  cancelamento
+    .ele("motivoCancelamento")
+    .txt(dados.cancelamento.motivoCancelamento);
+
+  return cancelamento;
+}
+
+// Função para gerar elemento de mudança contratual
+function generateMudancaContratualElement(parent, dados) {
+  const mudancaContratual = parent.ele("mudancaContratual");
+
+  mudancaContratual.ele("cco").txt(dados.cco);
+  mudancaContratual
+    .ele("relacaoDependencia")
+    .txt(dados.vinculo.relacaoDependencia);
+  mudancaContratual.ele("dataContratacao").txt(dados.vinculo.dataContratacao);
+  mudancaContratual.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
+  mudancaContratual
+    .ele("coberturaParcialTemporaria")
+    .txt(dados.vinculo.coberturaParcialTemporaria);
+  mudancaContratual
+    .ele("itensExcluidosCobertura")
+    .txt(dados.vinculo.itensExcluidosCobertura);
+
+  return mudancaContratual;
+}
+
+export const generateXML = (movements, options = {}) => {
   const {
     sequencialTransacao = "1",
     registroANS = "123456",
@@ -66,8 +225,6 @@ export const generateXML = (jsonData, options = {}) => {
 
   const dataAtual = new Date().toISOString().slice(0, 19);
 
-  // Inserir o valor do cnpjDestino na tag <cnpj> do XML
-  const cnpjDestinoValue = cnpjDestino || ""; // Valor passado na função ou vazio
   const root = create({ version: "1.0", encoding: "ISO-8859-1" })
     .ele("mensagemSIB")
     .ele("cabecalho")
@@ -89,7 +246,7 @@ export const generateXML = (jsonData, options = {}) => {
     .up()
     .ele("destino")
     .ele("cnpj")
-    .txt(cnpjDestinoValue)
+    .txt(cnpjDestino)
     .up()
     .up()
     .ele("versaoPadrao")
@@ -122,34 +279,27 @@ export const generateXML = (jsonData, options = {}) => {
       .up();
   } else {
     const beneficiarios = root.ele("beneficiarios");
-    jsonData.forEach((item, index) => {
-      beneficiarios
-        .ele("beneficiario")
-        .ele("sequencialBeneficiario")
-        .txt((index + 1).toString())
-        .up()
-        .ele("codigoOperadora")
-        .txt(item.codigoOperadora || registroANS)
-        .up()
-        .ele("numeroRegistroANS")
-        .txt(item.numeroRegistroANS || registroANS)
-        .up()
-        .ele("numeroMatricula")
-        .txt(item.numeroMatricula || "")
-        .up()
-        .ele("nome")
-        .txt(item.nome || "")
-        .up()
-        .ele("cpf")
-        .txt(item.cpf || "")
-        .up()
-        .ele("dataNascimento")
-        .txt(item.dataNascimento || "")
-        .up()
-        .ele("tipoMovimentacao")
-        .txt(item.tipoMovimentacao || "1")
-        .up()
-        .up();
+
+    movements.forEach((movement) => {
+      switch (movement.tipoMovimento) {
+        case "inclusao":
+          generateInclusaoElement(beneficiarios, movement.dados);
+          break;
+        case "retificacao":
+          generateRetificacaoElement(beneficiarios, movement.dados);
+          break;
+        case "cancelamento":
+          generateCancelamentoElement(beneficiarios, movement.dados);
+          break;
+        case "mudancaContratual":
+          generateMudancaContratualElement(beneficiarios, movement.dados);
+          break;
+        default:
+          console.warn(
+            `Tipo de movimento não suportado: ${movement.tipoMovimento}`,
+          );
+          break;
+      }
     });
   }
 

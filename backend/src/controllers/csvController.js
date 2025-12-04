@@ -22,6 +22,8 @@ export const uploadCSV = (req, res) => {
 };
 
 export const processCSV = async (req, res) => {
+  let filePathToDelete = null;
+
   try {
     const {
       filePath,
@@ -34,7 +36,7 @@ export const processCSV = async (req, res) => {
       tipoTransacao = "ATUALIZACAO SIB",
       versaoPadrao = "1.1",
       versaoAplicativo = "1.00",
-    } = req.body;   
+    } = req.body;
 
     if (
       motivoNaoEnvioBeneficiarios === "61" ||
@@ -48,13 +50,20 @@ export const processCSV = async (req, res) => {
         fabricanteAplicativo,
         motivoNaoEnvioBeneficiarios,
         cnpjDestino,
+        tipoTransacao,
+        versaoPadrao,
+        versaoAplicativo,
       });
-      // Extrair dataHoraRegistroTransacao para nome do arquivo
-      const match = xml.match(/<dataHoraTransacao>(.*?)<\/dataHoraTransacao>/);
+
+      const match = xml.match(
+        /<dataHoraRegistroTransacao>(.*?)<\/dataHoraRegistroTransacao>/,
+      );
       const dt = match ? match[1] : new Date().toISOString();
       const fmt = dt.replace(/[-T:]/g, "").slice(0, 14);
       const fileName = `${registroANS}${fmt}.SBX`;
+
       const validationResult = await validateXML(xml);
+
       return res.json({
         xml,
         fileName,
@@ -69,13 +78,14 @@ export const processCSV = async (req, res) => {
     }
 
     console.log("Processando arquivo:", filePath);
+    filePathToDelete = filePath;
 
-    // Parse CSV para JSON
-    const jsonData = await parseCSVToJSON(filePath);
-    console.log("Dados CSV parseados:", jsonData.length, "registros");
+    // Parse CSV para JSON com estrutura correta
+    const movements = await parseCSVToJSON(filePath);
+    console.log("Movimentos processados:", movements.length);
 
     // Gerar XML com dados adicionais
-    const xml = generateXML(jsonData, {
+    const xml = generateXML(movements, {
       sequencialTransacao,
       registroANS,
       nomeAplicativo,
@@ -86,27 +96,35 @@ export const processCSV = async (req, res) => {
       versaoPadrao,
       versaoAplicativo,
     });
-    // Gerar nome de arquivo conforme registroANS e dataHoraTransacao
+
+    // Gerar nome de arquivo conforme registroANS e dataHoraRegistroTransacao
     const dateMatch = xml.match(
-      /<dataHoraTransacao>(.*?)<\/dataHoraTransacao>/,
+      /<dataHoraRegistroTransacao>(.*?)<\/dataHoraRegistroTransacao>/,
     );
     const dateTime = dateMatch ? dateMatch[1] : new Date().toISOString();
     const formattedDate = dateTime.replace(/[-T:]/g, "").slice(0, 14);
     const fileName = `${registroANS}${formattedDate}.SBX`;
-    const validationResult = await validateXML(xml);
 
-    // Limpar arquivo temporário
-    fs.unlinkSync(filePath);
+    const validationResult = await validateXML(xml);
 
     res.json({
       xml,
       fileName,
       isValid: validationResult.isValid,
       errors: validationResult.errors || [],
-      recordCount: jsonData.length,
+      recordCount: movements.length,
     });
   } catch (err) {
     console.error("Erro no processamento:", err);
     res.status(500).json({ error: err.message });
+  } finally {
+    // Limpar arquivo temporário se existir
+    if (filePathToDelete && fs.existsSync(filePathToDelete)) {
+      try {
+        fs.unlinkSync(filePathToDelete);
+      } catch (unlinkErr) {
+        console.error("Erro ao remover arquivo temporário:", unlinkErr);
+      }
+    }
   }
 };
