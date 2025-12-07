@@ -31,12 +31,31 @@ export const processCSV = async (req, res) => {
       registroANS,
       nomeAplicativo,
       fabricanteAplicativo,
+      versaoAplicativo = "1.00",
       motivoNaoEnvioBeneficiarios,
-      cnpjDestino = "",
+      cnpjDestino = "03589068000146",
       tipoTransacao = "ATUALIZACAO SIB",
       versaoPadrao = "1.1",
-      versaoAplicativo = "1.00",
     } = req.body;
+
+    // Valida campos obrigatórios
+    if (!registroANS || registroANS.length !== 6) {
+      return res.status(400).json({
+        error: "Registro ANS é obrigatório e deve ter 6 dígitos",
+      });
+    }
+
+    if (!nomeAplicativo) {
+      return res.status(400).json({
+        error: "Nome do aplicativo é obrigatório",
+      });
+    }
+
+    if (!fabricanteAplicativo) {
+      return res.status(400).json({
+        error: "Fabricante do aplicativo é obrigatório",
+      });
+    }
 
     if (
       motivoNaoEnvioBeneficiarios === "61" ||
@@ -48,19 +67,36 @@ export const processCSV = async (req, res) => {
         registroANS,
         nomeAplicativo,
         fabricanteAplicativo,
+        versaoAplicativo,
         motivoNaoEnvioBeneficiarios,
         cnpjDestino,
         tipoTransacao,
         versaoPadrao,
-        versaoAplicativo,
       });
 
-      const match = xml.match(
+      // Extrair dataHoraRegistroTransacao do XML para gerar nome do arquivo
+      const dateMatch = xml.match(
         /<dataHoraRegistroTransacao>(.*?)<\/dataHoraRegistroTransacao>/,
       );
-      const dt = match ? match[1] : new Date().toISOString();
-      const fmt = dt.replace(/[-T:]/g, "").slice(0, 14);
-      const fileName = `${registroANS}${fmt}.SBX`;
+
+      let fileName;
+      if (dateMatch) {
+        // Formatar data para YYYYMMDDHHMISS
+        const dateStr = dateMatch[1];
+        // Remove todos os caracteres não numéricos: -, T, :, e espaços
+        const formattedDate = dateStr.replace(/[-T:\s]/g, "").slice(0, 14);
+        fileName = `${registroANS}${formattedDate}.SBX`;
+      } else {
+        // Fallback: usar data atual
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+        const hours = String(now.getHours()).padStart(2, "0");
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+        fileName = `${registroANS}${year}${month}${day}${hours}${minutes}${seconds}.SBX`;
+      }
 
       const validationResult = await validateXML(xml);
 
@@ -84,26 +120,48 @@ export const processCSV = async (req, res) => {
     const movements = await parseCSVToJSON(filePath);
     console.log("Movimentos processados:", movements.length);
 
+    if (movements.length === 0) {
+      return res.status(400).json({
+        error: "Nenhum registro válido encontrado no arquivo CSV",
+      });
+    }
+
     // Gerar XML com dados adicionais
     const xml = generateXML(movements, {
       sequencialTransacao,
       registroANS,
       nomeAplicativo,
       fabricanteAplicativo,
+      versaoAplicativo,
       motivoNaoEnvioBeneficiarios,
       cnpjDestino,
       tipoTransacao,
       versaoPadrao,
-      versaoAplicativo,
     });
 
-    // Gerar nome de arquivo conforme registroANS e dataHoraRegistroTransacao
+    // Gerar nome de arquivo conforme padrão ANS: {registroANS}{YYYYMMDDHHMISS}.SBX
     const dateMatch = xml.match(
       /<dataHoraRegistroTransacao>(.*?)<\/dataHoraRegistroTransacao>/,
     );
-    const dateTime = dateMatch ? dateMatch[1] : new Date().toISOString();
-    const formattedDate = dateTime.replace(/[-T:]/g, "").slice(0, 14);
-    const fileName = `${registroANS}${formattedDate}.SBX`;
+
+    let fileName;
+    if (dateMatch) {
+      // Formatar data para YYYYMMDDHHMISS
+      const dateStr = dateMatch[1];
+      // Remove todos os caracteres não numéricos: -, T, :, e espaços
+      const formattedDate = dateStr.replace(/[-T:\s]/g, "").slice(0, 14);
+      fileName = `${registroANS}${formattedDate}.SBX`;
+    } else {
+      // Fallback: usar data atual
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, "0");
+      const day = String(now.getDate()).padStart(2, "0");
+      const hours = String(now.getHours()).padStart(2, "0");
+      const minutes = String(now.getMinutes()).padStart(2, "0");
+      const seconds = String(now.getSeconds()).padStart(2, "0");
+      fileName = `${registroANS}${year}${month}${day}${hours}${minutes}${seconds}.SBX`;
+    }
 
     const validationResult = await validateXML(xml);
 
@@ -113,10 +171,13 @@ export const processCSV = async (req, res) => {
       isValid: validationResult.isValid,
       errors: validationResult.errors || [],
       recordCount: movements.length,
+      warnings: validationResult.warnings || [],
     });
   } catch (err) {
     console.error("Erro no processamento:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({
+      error: err.message || "Erro ao processar arquivo CSV",
+    });
   } finally {
     // Limpar arquivo temporário se existir
     if (filePathToDelete && fs.existsSync(filePathToDelete)) {

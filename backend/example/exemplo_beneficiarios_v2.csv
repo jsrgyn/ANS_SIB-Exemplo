@@ -1,0 +1,11 @@
+cpf;dn;nome;sexo;dataNascimento;nomeMae;cns;logradouro;numero;ds_complemento;bairro;codigoMunicipio;codigoMunicipioResidencia;cep;tipoEndereco;resideExterior;codigoBeneficiario;relacaoDependencia;dataContratacao;cnpj;cei;numeroPlanoANS;coberturaParcialTemporaria;itensExcluidosCobertura;cco;tipo_movimentacao
+12345678901;;Maria Silva Santos;3;15/07/1985;Ana Maria Silva;703209602811991;Rua das Flores;123;Apto 101;Centro;3550308;;01310930;2;0;BS001;1;10/01/2025;11222333000144;;504487251;0;0;;1
+98765432109;;João Oliveira Pereira;1;23/11/1992;Carla Oliveira;706005870046045;Avenida Brasil;456;Casa;Jardins;3550308;;01452900;2;0;BS002;1;15/01/2025;11222333000144;;504487251;0;0;;1
+45678912345;;Ana Claudia Costa;3;03/05/1978;Beatriz Costa;700600904367761;Rua São Paulo;789;Sala 2;Bela Vista;3550308;;01311000;2;0;BS003;1;20/01/2025;11222333000144;;504487251;0;0;;1
+78912345678;;Carlos Eduardo Almeida;1;12/09/1989;Dulce Almeida;703209602811992;Alameda Santos;1001;Conjunto 305;Cerqueira César;3550308;;01418000;2;0;BS004;4;05/02/2025;11222333000144;;504487251;0;0;;1
+32165498700;;Fernanda Lima Rodrigues;3;30/03/1995;Elaine Lima;706005870046046;Rua Augusta;500;Loja 10;Consolação;3550308;;01305000;2;0;BS005;1;12/02/2025;11222333000144;;504487251;0;0;;1
+65498732101;;Roberto Souza Martins;1;17/12/1980;Fabiana Souza;700600904367762;Avenida Paulista;2000;Andar 15;Bela Vista;3550308;;01310100;2;0;BS006;1;18/02/2025;11222333000144;;504487251;0;0;;1
+14725836907;;Patricia Fernandes Gomes;3;08/06/1991;Gabriela Fernandes;703209602811993;Rua Haddock Lobo;300;Apto 701;Cerqueira César;3550308;;01414000;2;0;BS007;3;22/02/2025;11222333000144;;504487251;0;0;;1
+25836914702;;Marcos Antonio Barbosa;1;14/10/1975;Helena Barbosa;706005870046047;Alameda Campinas;150;Sobreloja;Jardim Paulista;3550308;;01404000;2;0;BS008;1;25/02/2025;11222333000144;;504487251;0;0;123456789012;2
+36914725808;;Juliana Santos Rocha;3;29/01/1988;Isabel Santos;700600904367763;Rua da Consolação;800;Conjunto 402;República;3550308;;01301900;2;0;BS009;1;28/02/2025;11222333000144;;504487251;0;0;234567890123;5
+85296374105;;Ricardo Ferreira Lima;1;11/04/1983;Joana Ferreira;703209602811994;Avenida Rebouças;700;Bloco B;Pinheiros;3550308;;05401900;2;0;BS010;1;03/03/2025;11222333000144;;504487251;0;0;345678901234;4

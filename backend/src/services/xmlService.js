@@ -1,6 +1,30 @@
 import { create } from "xmlbuilder2";
 import crypto from "crypto";
 
+// Função para formatar data no formato YYYY-MM-DDTHH:MM:SS (xsd:dateTime)
+function formatDateTime(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+}
+
+// Função para formatar data no formato YYYYMMDDHHMISS (sem caracteres especiais)
+function formatDateTimeForFileName(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const seconds = String(date.getSeconds()).padStart(2, "0");
+
+  return `${year}${month}${day}${hours}${minutes}${seconds}`;
+}
+
 // Função para concatenar o conteúdo de todos elementos e atributos na ordem de ocorrência
 function concatenateContent(domNode) {
   let result = "";
@@ -72,34 +96,97 @@ function generateInclusaoElement(parent, dados) {
 
   // Elemento endereco
   const endereco = inclusao.ele("endereco");
-  if (dados.endereco.logradouro)
-    endereco.ele("logradouro").txt(dados.endereco.logradouro);
-  if (dados.endereco.numero) endereco.ele("numero").txt(dados.endereco.numero);
-  if (dados.endereco.complemento)
-    endereco.ele("complemento").txt(dados.endereco.complemento);
-  if (dados.endereco.bairro) endereco.ele("bairro").txt(dados.endereco.bairro);
-  endereco.ele("codigoMunicipio").txt(dados.endereco.codigoMunicipio);
-  if (dados.endereco.codigoMunicipioResidencia)
-    endereco
-      .ele("codigoMunicipioResidencia")
-      .txt(dados.endereco.codigoMunicipioResidencia);
-  if (dados.endereco.cep) endereco.ele("cep").txt(dados.endereco.cep);
-  if (dados.endereco.tipoEndereco)
-    endereco.ele("tipoEndereco").txt(dados.endereco.tipoEndereco);
+
+  // Sequência interna (opcional) para inclusão
+  const hasEnderecoFields =
+    dados.endereco.logradouro ||
+    dados.endereco.numero ||
+    dados.endereco.complemento ||
+    dados.endereco.bairro ||
+    dados.endereco.codigoMunicipio ||
+    dados.endereco.cep ||
+    dados.endereco.tipoEndereco;
+
+  if (hasEnderecoFields) {
+    if (dados.endereco.logradouro)
+      endereco.ele("logradouro").txt(dados.endereco.logradouro);
+    if (dados.endereco.numero)
+      endereco.ele("numero").txt(dados.endereco.numero);
+    if (dados.endereco.complemento)
+      endereco.ele("complemento").txt(dados.endereco.complemento);
+    if (dados.endereco.bairro)
+      endereco.ele("bairro").txt(dados.endereco.bairro);
+
+    // codigoMunicipio é obrigatório na inclusão
+    endereco.ele("codigoMunicipio").txt(dados.endereco.codigoMunicipio);
+
+    if (dados.endereco.codigoMunicipioResidencia)
+      endereco
+        .ele("codigoMunicipioResidencia")
+        .txt(dados.endereco.codigoMunicipioResidencia);
+    if (dados.endereco.cep) endereco.ele("cep").txt(dados.endereco.cep);
+    if (dados.endereco.tipoEndereco)
+      endereco.ele("tipoEndereco").txt(dados.endereco.tipoEndereco);
+  }
+
+  // resideExterior é obrigatório
   endereco.ele("resideExterior").txt(dados.endereco.resideExterior || "0");
 
   // Elemento vinculo
   const vinculo = inclusao.ele("vinculo");
   vinculo.ele("codigoBeneficiario").txt(dados.vinculo.codigoBeneficiario);
   vinculo.ele("relacaoDependencia").txt(dados.vinculo.relacaoDependencia);
+
+  // codigoBeneficiarioTitular é opcional, só inclui se relacaoDependencia não for 1 (titular)
+  if (
+    dados.vinculo.relacaoDependencia !== "1" &&
+    dados.vinculo.codigoBeneficiarioTitular
+  ) {
+    vinculo
+      .ele("codigoBeneficiarioTitular")
+      .txt(dados.vinculo.codigoBeneficiarioTitular);
+  }
+
   vinculo.ele("dataContratacao").txt(dados.vinculo.dataContratacao);
-  vinculo.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
-  vinculo
-    .ele("coberturaParcialTemporaria")
-    .txt(dados.vinculo.coberturaParcialTemporaria);
-  vinculo
-    .ele("itensExcluidosCobertura")
-    .txt(dados.vinculo.itensExcluidosCobertura);
+
+  // Choice: numeroPlanoANS (obrigatório) ou numeroPlanoOperadora
+  if (dados.vinculo.numeroPlanoANS) {
+    vinculo.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
+    // numeroPlanoPortabilidade é opcional
+    if (dados.vinculo.numeroPlanoPortabilidade) {
+      vinculo
+        .ele("numeroPlanoPortabilidade")
+        .txt(dados.vinculo.numeroPlanoPortabilidade);
+    }
+  } else if (dados.vinculo.numeroPlanoOperadora) {
+    vinculo.ele("numeroPlanoOperadora").txt(dados.vinculo.numeroPlanoOperadora);
+  }
+
+  // Campos opcionais
+  if (dados.vinculo.coberturaParcialTemporaria !== undefined)
+    vinculo
+      .ele("coberturaParcialTemporaria")
+      .txt(dados.vinculo.coberturaParcialTemporaria);
+
+  if (dados.vinculo.itensExcluidosCobertura !== undefined)
+    vinculo
+      .ele("itensExcluidosCobertura")
+      .txt(dados.vinculo.itensExcluidosCobertura);
+
+  // Choice para empresa contratante
+  if (dados.vinculo.cnpjEmpresaContratante) {
+    vinculo
+      .ele("cnpjEmpresaContratante")
+      .txt(dados.vinculo.cnpjEmpresaContratante);
+  } else if (dados.vinculo.ceiEmpresaContratante) {
+    vinculo
+      .ele("ceiEmpresaContratante")
+      .txt(dados.vinculo.ceiEmpresaContratante);
+  } else if (dados.vinculo.caepfEmpresaContratante) {
+    vinculo
+      .ele("caepfEmpresaContratante")
+      .txt(dados.vinculo.caepfEmpresaContratante);
+  }
 
   return inclusao;
 }
@@ -108,9 +195,13 @@ function generateInclusaoElement(parent, dados) {
 function generateRetificacaoElement(parent, dados) {
   const retificacao = parent.ele("retificacao");
 
+  // CCO é obrigatório para retificação
+  if (!dados.retificacao.cco) {
+    throw new Error("CCO é obrigatório para retificação");
+  }
   retificacao.ele("cco").txt(dados.retificacao.cco);
 
-  // Elemento identificacao
+  // Elemento identificacao (todos os campos são opcionais)
   const identificacao = retificacao.ele("identificacao");
   if (dados.identificacao.cpf)
     identificacao.ele("cpf").txt(dados.identificacao.cpf);
@@ -129,45 +220,107 @@ function generateRetificacaoElement(parent, dados) {
   if (dados.identificacao.nomeMae)
     identificacao.ele("nomeMae").txt(dados.identificacao.nomeMae);
 
-  // Elemento endereco
+  // Elemento endereco (todos os campos são opcionais)
   const endereco = retificacao.ele("endereco");
-  if (dados.endereco.logradouro)
-    endereco.ele("logradouro").txt(dados.endereco.logradouro);
-  if (dados.endereco.numero) endereco.ele("numero").txt(dados.endereco.numero);
-  if (dados.endereco.complemento)
-    endereco.ele("complemento").txt(dados.endereco.complemento);
-  if (dados.endereco.bairro) endereco.ele("bairro").txt(dados.endereco.bairro);
-  if (dados.endereco.codigoMunicipio)
-    endereco.ele("codigoMunicipio").txt(dados.endereco.codigoMunicipio);
-  if (dados.endereco.codigoMunicipioResidencia)
-    endereco
-      .ele("codigoMunicipioResidencia")
-      .txt(dados.endereco.codigoMunicipioResidencia);
-  if (dados.endereco.cep) endereco.ele("cep").txt(dados.endereco.cep);
-  if (dados.endereco.tipoEndereco)
-    endereco.ele("tipoEndereco").txt(dados.endereco.tipoEndereco);
-  if (dados.endereco.resideExterior)
+  const hasEnderecoFields =
+    dados.endereco.logradouro ||
+    dados.endereco.numero ||
+    dados.endereco.complemento ||
+    dados.endereco.bairro ||
+    dados.endereco.codigoMunicipio ||
+    dados.endereco.cep ||
+    dados.endereco.tipoEndereco;
+
+  if (hasEnderecoFields) {
+    if (dados.endereco.logradouro)
+      endereco.ele("logradouro").txt(dados.endereco.logradouro);
+    if (dados.endereco.numero)
+      endereco.ele("numero").txt(dados.endereco.numero);
+    if (dados.endereco.complemento)
+      endereco.ele("complemento").txt(dados.endereco.complemento);
+    if (dados.endereco.bairro)
+      endereco.ele("bairro").txt(dados.endereco.bairro);
+    if (dados.endereco.codigoMunicipio)
+      endereco.ele("codigoMunicipio").txt(dados.endereco.codigoMunicipio);
+    if (dados.endereco.codigoMunicipioResidencia)
+      endereco
+        .ele("codigoMunicipioResidencia")
+        .txt(dados.endereco.codigoMunicipioResidencia);
+    if (dados.endereco.cep) endereco.ele("cep").txt(dados.endereco.cep);
+    if (dados.endereco.tipoEndereco)
+      endereco.ele("tipoEndereco").txt(dados.endereco.tipoEndereco);
+  }
+
+  if (dados.endereco.resideExterior !== undefined)
     endereco.ele("resideExterior").txt(dados.endereco.resideExterior);
 
-  // Elemento vinculo
+  // Elemento vinculo (todos os campos são opcionais)
   const vinculo = retificacao.ele("vinculo");
   if (dados.vinculo.codigoBeneficiario)
     vinculo.ele("codigoBeneficiario").txt(dados.vinculo.codigoBeneficiario);
   if (dados.vinculo.relacaoDependencia)
     vinculo.ele("relacaoDependencia").txt(dados.vinculo.relacaoDependencia);
+
+  if (
+    dados.vinculo.relacaoDependencia !== "1" &&
+    dados.vinculo.codigoBeneficiarioTitular
+  ) {
+    vinculo
+      .ele("codigoBeneficiarioTitular")
+      .txt(dados.vinculo.codigoBeneficiarioTitular);
+  }
+
   if (dados.vinculo.dataContratacao)
     vinculo.ele("dataContratacao").txt(dados.vinculo.dataContratacao);
-  if (dados.vinculo.numeroPlanoANS)
+
+  if (dados.vinculo.dataReativacao)
+    vinculo.ele("dataReativacao").txt(dados.vinculo.dataReativacao);
+
+  // Campos de cancelamento (apenas se houver)
+  if (dados.vinculo.dataCancelamento || dados.vinculo.motivoCancelamento) {
+    if (dados.vinculo.dataCancelamento)
+      vinculo.ele("dataCancelamento").txt(dados.vinculo.dataCancelamento);
+    if (dados.vinculo.motivoCancelamento)
+      vinculo.ele("motivoCancelamento").txt(dados.vinculo.motivoCancelamento);
+  }
+
+  // Choice: numeroPlanoANS ou numeroPlanoOperadora
+  if (dados.vinculo.numeroPlanoANS) {
     vinculo.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
-  if (dados.vinculo.coberturaParcialTemporaria)
+    if (dados.vinculo.numeroPlanoPortabilidade)
+      vinculo
+        .ele("numeroPlanoPortabilidade")
+        .txt(dados.vinculo.numeroPlanoPortabilidade);
+  } else if (dados.vinculo.numeroPlanoOperadora) {
+    vinculo.ele("numeroPlanoOperadora").txt(dados.vinculo.numeroPlanoOperadora);
+  }
+
+  if (dados.vinculo.coberturaParcialTemporaria !== undefined)
     vinculo
       .ele("coberturaParcialTemporaria")
       .txt(dados.vinculo.coberturaParcialTemporaria);
-  if (dados.vinculo.itensExcluidosCobertura)
+
+  if (dados.vinculo.itensExcluidosCobertura !== undefined)
     vinculo
       .ele("itensExcluidosCobertura")
       .txt(dados.vinculo.itensExcluidosCobertura);
 
+  // Choice para empresa contratante
+  if (dados.vinculo.cnpjEmpresaContratante) {
+    vinculo
+      .ele("cnpjEmpresaContratante")
+      .txt(dados.vinculo.cnpjEmpresaContratante);
+  } else if (dados.vinculo.ceiEmpresaContratante) {
+    vinculo
+      .ele("ceiEmpresaContratante")
+      .txt(dados.vinculo.ceiEmpresaContratante);
+  } else if (dados.vinculo.caepfEmpresaContratante) {
+    vinculo
+      .ele("caepfEmpresaContratante")
+      .txt(dados.vinculo.caepfEmpresaContratante);
+  }
+
+  // Campo opcional codigoProcedimentoAdministrativo
   if (dados.retificacao.codigoProcedimentoAdministrativo) {
     retificacao
       .ele("codigoProcedimentoAdministrativo")
@@ -180,6 +333,17 @@ function generateRetificacaoElement(parent, dados) {
 // Função para gerar elemento de cancelamento
 function generateCancelamentoElement(parent, dados) {
   const cancelamento = parent.ele("cancelamento");
+
+  // Valida campos obrigatórios
+  if (!dados.cancelamento.cco) {
+    throw new Error("CCO é obrigatório para cancelamento");
+  }
+  if (!dados.cancelamento.dataCancelamento) {
+    throw new Error("Data de cancelamento é obrigatória");
+  }
+  if (!dados.cancelamento.motivoCancelamento) {
+    throw new Error("Motivo de cancelamento é obrigatório");
+  }
 
   cancelamento.ele("cco").txt(dados.cancelamento.cco);
   cancelamento.ele("dataCancelamento").txt(dados.cancelamento.dataCancelamento);
@@ -194,18 +358,63 @@ function generateCancelamentoElement(parent, dados) {
 function generateMudancaContratualElement(parent, dados) {
   const mudancaContratual = parent.ele("mudancaContratual");
 
+  // CCO é obrigatório
+  if (!dados.cco) {
+    throw new Error("CCO é obrigatório para mudança contratual");
+  }
+
   mudancaContratual.ele("cco").txt(dados.cco);
   mudancaContratual
     .ele("relacaoDependencia")
-    .txt(dados.vinculo.relacaoDependencia);
+    .txt(dados.vinculo.relacaoDependencia || "1");
+
+  // codigoBeneficiarioTitular é opcional
+  if (
+    dados.vinculo.relacaoDependencia !== "1" &&
+    dados.vinculo.codigoBeneficiarioTitular
+  ) {
+    mudancaContratual
+      .ele("codigoBeneficiarioTitular")
+      .txt(dados.vinculo.codigoBeneficiarioTitular);
+  }
+
   mudancaContratual.ele("dataContratacao").txt(dados.vinculo.dataContratacao);
-  mudancaContratual.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
+
+  // Choice: numeroPlanoANS ou numeroPlanoOperadora
+  if (dados.vinculo.numeroPlanoANS) {
+    mudancaContratual.ele("numeroPlanoANS").txt(dados.vinculo.numeroPlanoANS);
+    if (dados.vinculo.numeroPlanoPortabilidade) {
+      mudancaContratual
+        .ele("numeroPlanoPortabilidade")
+        .txt(dados.vinculo.numeroPlanoPortabilidade);
+    }
+  } else if (dados.vinculo.numeroPlanoOperadora) {
+    mudancaContratual
+      .ele("numeroPlanoOperadora")
+      .txt(dados.vinculo.numeroPlanoOperadora);
+  }
+
   mudancaContratual
     .ele("coberturaParcialTemporaria")
-    .txt(dados.vinculo.coberturaParcialTemporaria);
+    .txt(dados.vinculo.coberturaParcialTemporaria || "0");
   mudancaContratual
     .ele("itensExcluidosCobertura")
-    .txt(dados.vinculo.itensExcluidosCobertura);
+    .txt(dados.vinculo.itensExcluidosCobertura || "0");
+
+  // Choice para empresa contratante
+  if (dados.vinculo.cnpjEmpresaContratante) {
+    mudancaContratual
+      .ele("cnpjEmpresaContratante")
+      .txt(dados.vinculo.cnpjEmpresaContratante);
+  } else if (dados.vinculo.ceiEmpresaContratante) {
+    mudancaContratual
+      .ele("ceiEmpresaContratante")
+      .txt(dados.vinculo.ceiEmpresaContratante);
+  } else if (dados.vinculo.caepfEmpresaContratante) {
+    mudancaContratual
+      .ele("caepfEmpresaContratante")
+      .txt(dados.vinculo.caepfEmpresaContratante);
+  }
 
   return mudancaContratual;
 }
@@ -213,17 +422,30 @@ function generateMudancaContratualElement(parent, dados) {
 export const generateXML = (movements, options = {}) => {
   const {
     sequencialTransacao = "1",
-    registroANS = "123456",
-    nomeAplicativo = "Operadora Exemplo",
-    fabricanteAplicativo = "ANS",
+    registroANS = "",
+    nomeAplicativo = "",
+    fabricanteAplicativo = "",
+    versaoAplicativo = "1.00",
     motivoNaoEnvioBeneficiarios = "",
-    cnpjDestino = "",
+    cnpjDestino = "03589068000146",
     tipoTransacao = "ATUALIZACAO SIB",
     versaoPadrao = "1.1",
-    versaoAplicativo = "1.00",
   } = options;
 
-  const dataAtual = new Date().toISOString().slice(0, 19);
+  // Valida campos obrigatórios do cabeçalho
+  if (!registroANS || registroANS.length !== 6) {
+    throw new Error("Registro ANS é obrigatório e deve ter 6 dígitos");
+  }
+  if (!nomeAplicativo) {
+    throw new Error("Nome do aplicativo é obrigatório");
+  }
+  if (!fabricanteAplicativo) {
+    throw new Error("Fabricante do aplicativo é obrigatório");
+  }
+
+  // Usa a hora atual do computador no formato YYYY-MM-DDTHH:MM:SS (xsd:dateTime)
+  const now = new Date();
+  const dataAtual = formatDateTime(now);
 
   const root = create({ version: "1.0", encoding: "ISO-8859-1" })
     .ele("mensagemSIB")
@@ -236,7 +458,7 @@ export const generateXML = (movements, options = {}) => {
     .txt(sequencialTransacao)
     .up()
     .ele("dataHoraRegistroTransacao")
-    .txt(dataAtual)
+    .txt(dataAtual) // Agora no formato correto: YYYY-MM-DDTHH:MM:SS
     .up()
     .up()
     .ele("origem")
@@ -280,25 +502,33 @@ export const generateXML = (movements, options = {}) => {
   } else {
     const beneficiarios = root.ele("beneficiarios");
 
-    movements.forEach((movement) => {
-      switch (movement.tipoMovimento) {
-        case "inclusao":
-          generateInclusaoElement(beneficiarios, movement.dados);
-          break;
-        case "retificacao":
-          generateRetificacaoElement(beneficiarios, movement.dados);
-          break;
-        case "cancelamento":
-          generateCancelamentoElement(beneficiarios, movement.dados);
-          break;
-        case "mudancaContratual":
-          generateMudancaContratualElement(beneficiarios, movement.dados);
-          break;
-        default:
-          console.warn(
-            `Tipo de movimento não suportado: ${movement.tipoMovimento}`,
-          );
-          break;
+    movements.forEach((movement, index) => {
+      try {
+        switch (movement.tipoMovimento) {
+          case "inclusao":
+            generateInclusaoElement(beneficiarios, movement.dados);
+            break;
+          case "retificacao":
+            generateRetificacaoElement(beneficiarios, movement.dados);
+            break;
+          case "cancelamento":
+            generateCancelamentoElement(beneficiarios, movement.dados);
+            break;
+          case "mudancaContratual":
+            generateMudancaContratualElement(beneficiarios, movement.dados);
+            break;
+          default:
+            console.warn(
+              `Tipo de movimento não suportado na linha ${index + 1}: ${movement.tipoMovimento}`,
+            );
+            break;
+        }
+      } catch (error) {
+        console.error(
+          `Erro ao processar movimento na linha ${index + 1}:`,
+          error.message,
+        );
+        throw new Error(`Linha ${index + 1}: ${error.message}`);
       }
     });
   }
@@ -307,7 +537,7 @@ export const generateXML = (movements, options = {}) => {
   const doc = root.doc();
   const xmlWithoutEpilogo = doc.end({ prettyPrint: true });
 
-  // Concatenar conteúdo para o hash
+  // Concatenar conteúdo para o hash (excluindo epilogo)
   const concatenatedString = concatenateContent(doc.root().node);
 
   // Gerar hash MD5

@@ -32,6 +32,7 @@
       const [registroANS, setRegistroANS] = React.useState("");
       const [nomeAplicativo, setNomeAplicativo] = React.useState("");
       const [fabricanteAplicativo, setFabricanteAplicativo] = React.useState("");
+      const [versaoAplicativo, setVersaoAplicativo] = React.useState("1.00");
       const [motivoNaoEnvioBeneficiarios, setMotivoNaoEnvioBeneficiarios] = React.useState("");
       const [tipoTransacao] = React.useState("ATUALIZACAO SIB");
       const [cnpjDestino] = React.useState("03589068000146");
@@ -42,6 +43,27 @@
       };
 
       const handleUpload = async () => {
+        // Validação de campos obrigatórios
+        if (!registroANS || registroANS.length !== 6) {
+          setError("Registro ANS é obrigatório e deve ter 6 dígitos");
+          return;
+        }
+
+        if (!nomeAplicativo) {
+          setError("Nome do aplicativo é obrigatório");
+          return;
+        }
+
+        if (!fabricanteAplicativo) {
+          setError("Fabricante do aplicativo é obrigatório");
+          return;
+        }
+
+        if (!versaoAplicativo) {
+          setError("Versão do aplicativo é obrigatória");
+          return;
+        }
+
         if ((motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62") && file) {
           setError("Não é necessário importar arquivo de beneficiários para o motivo selecionado.");
           return;
@@ -49,11 +71,6 @@
 
         if (!file && motivoNaoEnvioBeneficiarios === "") {
           setError("Por favor, selecione um arquivo CSV ou informe o motivo de não envio.");
-          return;
-        }
-
-        if (!registroANS || !nomeAplicativo || !fabricanteAplicativo) {
-          setError("Por favor, preencha todos os campos obrigatórios");
           return;
         }
 
@@ -69,6 +86,7 @@
               registroANS,
               nomeAplicativo,
               fabricanteAplicativo,
+              versaoAplicativo,
               motivoNaoEnvioBeneficiarios,
               cnpjDestino,
             });
@@ -80,6 +98,7 @@
             formData.append("registroANS", registroANS);
             formData.append("nomeAplicativo", nomeAplicativo);
             formData.append("fabricanteAplicativo", fabricanteAplicativo);
+            formData.append("versaoAplicativo", versaoAplicativo);
             formData.append("cnpjDestino", cnpjDestino);
 
             const uploadRes = await axios.post("/api/csv/upload", formData, {
@@ -94,6 +113,7 @@
               registroANS,
               nomeAplicativo,
               fabricanteAplicativo,
+              versaoAplicativo,
               cnpjDestino,
             });
             xmlResponse = processRes.data;
@@ -143,7 +163,7 @@
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="registroANS" className="form-label">Registro ANS</label>
+                    <label htmlFor="registroANS" className="form-label">Registro ANS *</label>
                     <input
                       type="text"
                       id="registroANS"
@@ -151,10 +171,14 @@
                       value={registroANS}
                       onChange={(e) => setRegistroANS(e.target.value)}
                       required
+                      maxLength={6}
+                      pattern="[0-9]{6}"
+                      title="Deve conter exatamente 6 dígitos"
                     />
+                    <small className="form-text text-muted">Exemplo: 424561</small>
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="nomeAplicativo" className="form-label">Nome do Aplicativo</label>
+                    <label htmlFor="nomeAplicativo" className="form-label">Nome do Aplicativo *</label>
                     <input
                       type="text"
                       id="nomeAplicativo"
@@ -165,7 +189,7 @@
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="fabricanteAplicativo" className="form-label">Fabricante do Aplicativo</label>
+                    <label htmlFor="fabricanteAplicativo" className="form-label">Fabricante do Aplicativo *</label>
                     <input
                       type="text"
                       id="fabricanteAplicativo"
@@ -174,6 +198,18 @@
                       onChange={(e) => setFabricanteAplicativo(e.target.value)}
                       required
                     />
+                  </div>
+                  <div className="mb-3">
+                    <label htmlFor="versaoAplicativo" className="form-label">Versão do Aplicativo *</label>
+                    <input
+                      type="text"
+                      id="versaoAplicativo"
+                      className="form-control"
+                      value={versaoAplicativo}
+                      onChange={(e) => setVersaoAplicativo(e.target.value)}
+                      required
+                    />
+                    <small className="form-text text-muted">Exemplo: 1.00, 2.15, etc.</small>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="motivoNaoEnvioBeneficiarios" className="form-label">Código de Não Envio de Beneficiários</label>
@@ -287,6 +323,8 @@
                         )}
                       </h6>
                       XML {isValid ? "está conforme" : "não está conforme"} os schemas XSD da ANS
+                      <br />
+                      <small>Nome do arquivo: {fileName}</small>
                     </div>
                   )}
 
@@ -298,6 +336,9 @@
                       >
                         <i className="bi bi-download"></i> Download XML
                       </button>
+                      <div className="mt-2 text-center">
+                        <small className="text-muted">Arquivo será salvo como: {fileName}</small>
+                      </div>
                     </div>
                   )}
                 </div>
