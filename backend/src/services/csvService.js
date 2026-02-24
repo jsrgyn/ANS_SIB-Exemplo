@@ -72,11 +72,6 @@ const mapTipoMovimento = (tipoMovimentacao) => {
 const validateRequiredFields = (row, tipoMovimento) => {
   const errors = [];
 
-  // Validações comuns para todos os tipos
-  if (!row.nome || row.nome.trim().length < 3) {
-    errors.push("Nome é obrigatório e deve ter pelo menos 3 caracteres");
-  }
-
   if (!row.sexo || !["1", "3"].includes(row.sexo)) {
     errors.push("Sexo é obrigatório e deve ser 1 (masculino) ou 3 (feminino)");
   }
@@ -87,6 +82,12 @@ const validateRequiredFields = (row, tipoMovimento) => {
 
   // Validações específicas por tipo de movimento
   if (tipoMovimento === "inclusao") {
+    
+    // Validações comuns para todos os tipos
+    if (!row.nome || row.nome.trim().length < 3) {
+      errors.push("Nome é obrigatório e deve ter pelo menos 3 caracteres");
+    }
+
     if (!row.codigoBeneficiario) {
       errors.push("Código do beneficiário é obrigatório para inclusão");
     }
