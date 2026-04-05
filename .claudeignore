@@ -1,0 +1,29 @@
+# node_modules — muito grande, sem valor para análise de código
+node_modules/
+*/node_modules/
+**/node_modules/
+
+# Uploads temporários — arquivos enviados pelo usuário, não são código
+backend/uploads/
+
+# Arquivos gerados — output do sistema, derivados do código-fonte
+*.SBX
+*.sbx
+
+# Cobertura de testes
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
+
+# Build
+dist/
+build/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+*.swp
+*.swo

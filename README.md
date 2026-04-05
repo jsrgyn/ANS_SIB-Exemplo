@@ -127,6 +127,8 @@ O arquivo CSV deve usar delimitador ponto-e-vírgula (;) e conter as seguintes c
 **Upload de arquivo CSV**
 - Content-Type: `multipart/form-data`
 - Body: `file` (arquivo CSV)
+- Limites: tamanho máximo configurado por `MAX_FILE_SIZE` (padrão 50MB); apenas MIME `text/csv` ou `application/vnd.ms-excel`
+- Erros: `413 Payload Too Large` se exceder o limite; `400` se tipo inválido ou arquivo vazio
 
 ### POST `/api/csv/process`
 **Processamento do CSV para XML**
@@ -140,6 +142,31 @@ O arquivo CSV deve usar delimitador ponto-e-vírgula (;) e conter as seguintes c
   "versaoAplicativo": "1.0.0",
   "motivoNaoEnvioBeneficiarios": "",
   "cnpjDestino": "03589068000146"
+}
+```
+**Resposta de sucesso (200)**
+```json
+{
+  "xml": "<?xml ...",
+  "fileName": "123456YYYYMMDDHHMISS.SBX",
+  "isValid": true,
+  "errors": [],
+  "recordCount": 10,
+  "totalProcessados": 10,
+  "totalRejeitados": 2,
+  "errosCSV": [
+    { "linha": 3, "campo": "sexo", "mensagem": "Obrigatório e deve ser 1 ou 3" },
+    { "linha": 7, "campo": "cco", "mensagem": "Obrigatório e deve ter 12 dígitos para retificação/cancelamento" }
+  ]
+}
+```
+**Resposta sem linhas válidas (422)**
+```json
+{
+  "error": "Nenhuma linha válida encontrada. Verifique os erros de validação.",
+  "totalProcessados": 0,
+  "totalRejeitados": 5,
+  "errosCSV": [...]
 }
 ```
 
@@ -213,7 +240,8 @@ O sistema gera XML no seguinte formato:
 PORT=3001
 NODE_ENV=development
 UPLOAD_DIR=uploads/
-MAX_FILE_SIZE=10485760 # 10MB
+MAX_FILE_SIZE=52428800  # Tamanho máximo de upload em bytes (padrão 50MB)
+SIB_SCHEMA_VERSION=1.2
 ```
 
 ### Scripts NPM
@@ -268,6 +296,9 @@ Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICEN
 
 ## ✨ Melhorias Recentes
 
+- ✅ Linhas rejeitadas do CSV reportadas na resposta (`errosCSV`) e exibidas no log da interface
+- ✅ Limite de tamanho de arquivo configurável via `MAX_FILE_SIZE` no `.env`
+- ✅ Validação de MIME type no upload (apenas CSV aceito)
 - ✅ Formato de data corrigido para `xsd:dateTime` (YYYY-MM-DDTHH:MM:SS)
 - ✅ Campo `versaoAplicativo` adicionado ao formulário
 - ✅ Nome do arquivo no padrão ANS: `{registroANS}{YYYYMMDDHHMISS}.SBX`
@@ -277,6 +308,6 @@ Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICEN
 
 ---
 
-**Versão**: 2.0.0  
-**Última atualização**: Dezembro 2024  
+**Versão**: 2.1.0
+**Última atualização**: Abril 2026
 **Compatível com**: ANS/SIB Versão 1.2

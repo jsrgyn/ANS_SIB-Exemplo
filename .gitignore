@@ -3,6 +3,7 @@ node_modules/
 */node_modules/
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -15,24 +16,32 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Uploads
+# Uploads — pasta temporária de arquivos enviados
 backend/uploads/*
 !backend/uploads/.gitkeep
+
+# Arquivos gerados pelo sistema
+*.SBX
+*.sbx
+
+# Cobertura de testes
+coverage/
+.nyc_output/
 
 # Build outputs
 dist/
 build/
 
-# IDE files
+# IDE / Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS files
+# OS
 .DS_Store
 Thumbs.db
 
-# Temporary files
+# Temporários
 *.tmp
 *.temp
