@@ -10,24 +10,55 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <style>
+    #log-memo {
+      font-family: monospace;
+      font-size: 12px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      resize: vertical;
+      min-height: 160px;
+    }
+    #log-memo .log-error { color: #f48771; }
+    #log-memo .log-warn  { color: #dcdcaa; }
+    #log-memo .log-ok    { color: #4ec9b0; }
+  </style>
 </head>
 
 <body>
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useRef, useEffect } = React;
+
+    function LogMemo({ lines }) {
+      const ref = useRef(null);
+      useEffect(() => {
+        if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+      }, [lines]);
+
+      return (
+        <textarea
+          id="log-memo"
+          ref={ref}
+          className="form-control mt-3 w-100"
+          readOnly
+          rows={8}
+          value={lines.join("\n")}
+          placeholder="Log de processamento aparecerá aqui..."
+        />
+      );
+    }
 
     function App() {
       const [file, setFile] = React.useState(null);
       const [xml, setXml] = React.useState("");
       const [isValid, setIsValid] = React.useState(null);
       const [fileName, setFileName] = React.useState("");
-
       const [loading, setLoading] = React.useState(false);
       const [error, setError] = React.useState("");
+      const [logLines, setLogLines] = React.useState([]);
 
-      // Novos estados para os campos adicionais
       const [sequencialTransacao, setSequencialTransacao] = React.useState(1);
       const [registroANS, setRegistroANS] = React.useState("");
       const [nomeAplicativo, setNomeAplicativo] = React.useState("");
@@ -37,38 +68,26 @@
       const [tipoTransacao] = React.useState("ATUALIZACAO SIB");
       const [cnpjDestino] = React.useState("03589068000146");
 
+      const addLog = (lines) => setLogLines((prev) => [...prev, ...lines]);
+      const clearLog = () => setLogLines([]);
+
       const handleFileChange = (e) => {
         setFile(e.target.files[0]);
         setError("");
       };
 
       const handleUpload = async () => {
-        // Validação de campos obrigatórios
         if (!registroANS || registroANS.length !== 6) {
           setError("Registro ANS é obrigatório e deve ter 6 dígitos");
           return;
         }
-
-        if (!nomeAplicativo) {
-          setError("Nome do aplicativo é obrigatório");
-          return;
-        }
-
-        if (!fabricanteAplicativo) {
-          setError("Fabricante do aplicativo é obrigatório");
-          return;
-        }
-
-        if (!versaoAplicativo) {
-          setError("Versão do aplicativo é obrigatória");
-          return;
-        }
-
+        if (!nomeAplicativo) { setError("Nome do aplicativo é obrigatório"); return; }
+        if (!fabricanteAplicativo) { setError("Fabricante do aplicativo é obrigatório"); return; }
+        if (!versaoAplicativo) { setError("Versão do aplicativo é obrigatória"); return; }
         if ((motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62") && file) {
           setError("Não é necessário importar arquivo de beneficiários para o motivo selecionado.");
           return;
         }
-
         if (!file && motivoNaoEnvioBeneficiarios === "") {
           setError("Por favor, selecione um arquivo CSV ou informe o motivo de não envio.");
           return;
@@ -76,19 +95,17 @@
 
         setLoading(true);
         setError("");
+        clearLog();
+        setIsValid(null);
+        setXml("");
 
         try {
           let xmlResponse;
+
           if (motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62") {
-            // Gerar XML sem arquivo de beneficiários, apenas com motivoNaoEnvioBeneficiarios
             const response = await axios.post("/api/csv/process", {
-              sequencialTransacao,
-              registroANS,
-              nomeAplicativo,
-              fabricanteAplicativo,
-              versaoAplicativo,
-              motivoNaoEnvioBeneficiarios,
-              cnpjDestino,
+              sequencialTransacao, registroANS, nomeAplicativo, fabricanteAplicativo,
+              versaoAplicativo, motivoNaoEnvioBeneficiarios, cnpjDestino,
             });
             xmlResponse = response.data;
           } else {
@@ -102,19 +119,13 @@
             formData.append("cnpjDestino", cnpjDestino);
 
             const uploadRes = await axios.post("/api/csv/upload", formData, {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
+              headers: { "Content-Type": "multipart/form-data" },
             });
 
             const processRes = await axios.post("/api/csv/process", {
               filePath: uploadRes.data.filePath,
-              sequencialTransacao,
-              registroANS,
-              nomeAplicativo,
-              fabricanteAplicativo,
-              versaoAplicativo,
-              cnpjDestino,
+              sequencialTransacao, registroANS, nomeAplicativo, fabricanteAplicativo,
+              versaoAplicativo, cnpjDestino,
             });
             xmlResponse = processRes.data;
           }
@@ -122,8 +133,48 @@
           setXml(xmlResponse.xml);
           setIsValid(xmlResponse.isValid);
           setFileName(xmlResponse.fileName);
+
+          const newLog = [];
+          newLog.push(`[OK] ${xmlResponse.totalProcessados ?? xmlResponse.recordCount} registro(s) processado(s) — Arquivo: ${xmlResponse.fileName}`);
+
+          if ((xmlResponse.totalRejeitados ?? 0) > 0) {
+            newLog.push(`[AVISO] ${xmlResponse.totalRejeitados} linha(s) do CSV rejeitada(s):`);
+            (xmlResponse.errosCSV || []).forEach((e) =>
+              newLog.push(`  [CSV] Linha ${e.linha} (${e.campo}): ${e.mensagem}`)
+            );
+          }
+
+          if (xmlResponse.isValid) {
+            newLog.push("[OK] XML válido conforme schema XSD da ANS");
+          } else {
+            newLog.push(`[ERRO] XML inválido — ${(xmlResponse.errors || []).length} erro(s) XSD:`);
+            (xmlResponse.errors || []).forEach((e) => newLog.push(`  ${e.formatted || e.message || String(e)}`));
+          }
+
+          addLog(newLog);
         } catch (err) {
-          setError(err.response?.data?.error || "Erro ao processar arquivo");
+          const data = err.response?.data;
+
+          if (data?.algorithmErrors && data.algorithmErrors.length > 0) {
+            // Erros de algoritmo ANS (HTTP 422)
+            setError(data.error || "Erros de validação ANS encontrados. Verifique o log.");
+            const algLog = ["[ERRO] Validação ANS bloqueou a geração do XML:"];
+            data.algorithmErrors.forEach((e) =>
+              algLog.push(`  [ALG] Linha ${e.row} - ${e.field}: ${e.message}${e.value ? ` (valor: '${e.value}')` : ""}`)
+            );
+            addLog(algLog);
+          } else if (data?.errosCSV && data.errosCSV.length > 0) {
+            // Nenhuma linha válida no CSV (HTTP 422)
+            setError(data.error || "Nenhuma linha válida encontrada no CSV.");
+            const csvLog = [`[ERRO] ${data.totalRejeitados} linha(s) rejeitada(s) — nenhum registro válido para gerar XML:`];
+            data.errosCSV.forEach((e) =>
+              csvLog.push(`  [CSV] Linha ${e.linha} (${e.campo}): ${e.mensagem}`)
+            );
+            addLog(csvLog);
+          } else {
+            setError(data?.error || "Erro ao processar arquivo");
+            if (data?.error) addLog([`[ERRO] ${data.error}`]);
+          }
         } finally {
           setLoading(false);
         }
@@ -139,6 +190,35 @@
         URL.revokeObjectURL(url);
       };
 
+      const handleXMLValidate = async (e) => {
+        const xmlFile = e.target.files[0];
+        if (!xmlFile) return;
+
+        clearLog();
+        addLog([`[INFO] Validando arquivo: ${xmlFile.name}...`]);
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+          const xmlContent = event.target.result;
+          try {
+            const response = await axios.post("/api/xml/validate", { xml: xmlContent });
+            if (response.data.isValid) {
+              addLog(["[OK] XML válido conforme schema XSD da ANS"]);
+            } else {
+              const errLog = [`[ERRO] XML inválido — ${(response.data.errors || []).length} erro(s):`];
+              (response.data.errors || []).forEach((e) =>
+                errLog.push(`  ${e.formatted || e.message || String(e)}`)
+              );
+              addLog(errLog);
+            }
+          } catch (err) {
+            addLog([`[ERRO] Falha ao validar XML: ${err.message}`]);
+          }
+        };
+        reader.readAsText(xmlFile);
+        e.target.value = "";
+      };
+
       return (
         <div className="container mt-5">
           <div className="row justify-content-center">
@@ -146,79 +226,42 @@
               <div className="card">
                 <div className="card-header">
                   <h3 className="card-title mb-0">
-                    <i className="bi bi-file-earmark-medical"></i>
                     ANS SIB - Gerador de XML de Beneficiários
                   </h3>
                 </div>
                 <div className="card-body">
                   <div className="mb-3">
                     <label htmlFor="sequencialTransacao" className="form-label">Sequencial da Transação</label>
-                    <input
-                      type="number"
-                      id="sequencialTransacao"
-                      className="form-control"
-                      value={sequencialTransacao}
-                      onChange={(e) => setSequencialTransacao(e.target.value)}
-                      min={1}
-                    />
+                    <input type="number" id="sequencialTransacao" className="form-control"
+                      value={sequencialTransacao} onChange={(e) => setSequencialTransacao(e.target.value)} min={1} />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="registroANS" className="form-label">Registro ANS *</label>
-                    <input
-                      type="text"
-                      id="registroANS"
-                      className="form-control"
-                      value={registroANS}
-                      onChange={(e) => setRegistroANS(e.target.value)}
-                      required
-                      maxLength={6}
-                      pattern="[0-9]{6}"
-                      title="Deve conter exatamente 6 dígitos"
-                    />
+                    <input type="text" id="registroANS" className="form-control"
+                      value={registroANS} onChange={(e) => setRegistroANS(e.target.value)}
+                      required maxLength={6} pattern="[0-9]{6}" title="Deve conter exatamente 6 dígitos" />
                     <small className="form-text text-muted">Exemplo: 424561</small>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="nomeAplicativo" className="form-label">Nome do Aplicativo *</label>
-                    <input
-                      type="text"
-                      id="nomeAplicativo"
-                      className="form-control"
-                      value={nomeAplicativo}
-                      onChange={(e) => setNomeAplicativo(e.target.value)}
-                      required
-                    />
+                    <input type="text" id="nomeAplicativo" className="form-control"
+                      value={nomeAplicativo} onChange={(e) => setNomeAplicativo(e.target.value)} required />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="fabricanteAplicativo" className="form-label">Fabricante do Aplicativo *</label>
-                    <input
-                      type="text"
-                      id="fabricanteAplicativo"
-                      className="form-control"
-                      value={fabricanteAplicativo}
-                      onChange={(e) => setFabricanteAplicativo(e.target.value)}
-                      required
-                    />
+                    <input type="text" id="fabricanteAplicativo" className="form-control"
+                      value={fabricanteAplicativo} onChange={(e) => setFabricanteAplicativo(e.target.value)} required />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="versaoAplicativo" className="form-label">Versão do Aplicativo *</label>
-                    <input
-                      type="text"
-                      id="versaoAplicativo"
-                      className="form-control"
-                      value={versaoAplicativo}
-                      onChange={(e) => setVersaoAplicativo(e.target.value)}
-                      required
-                    />
+                    <input type="text" id="versaoAplicativo" className="form-control"
+                      value={versaoAplicativo} onChange={(e) => setVersaoAplicativo(e.target.value)} required />
                     <small className="form-text text-muted">Exemplo: 1.00, 2.15, etc.</small>
                   </div>
                   <div className="mb-3">
                     <label htmlFor="motivoNaoEnvioBeneficiarios" className="form-label">Código de Não Envio de Beneficiários</label>
-                    <select
-                      id="motivoNaoEnvioBeneficiarios"
-                      className="form-select"
-                      value={motivoNaoEnvioBeneficiarios}
-                      onChange={(e) => setMotivoNaoEnvioBeneficiarios(e.target.value)}
-                    >
+                    <select id="motivoNaoEnvioBeneficiarios" className="form-select"
+                      value={motivoNaoEnvioBeneficiarios} onChange={(e) => setMotivoNaoEnvioBeneficiarios(e.target.value)}>
                       <option value="">-- Selecione --</option>
                       <option value="61">61 - Inexistência de beneficiários na competência</option>
                       <option value="62">62 - Inexistência de Atualização cadastral na competência</option>
@@ -226,121 +269,69 @@
                   </div>
                   <div className="mb-3">
                     <label htmlFor="tipoTransacao" className="form-label">Tipo de Transação</label>
-                    <input
-                      type="text"
-                      id="tipoTransacao"
-                      className="form-control"
-                      value={tipoTransacao}
-                      readOnly
-                    />
+                    <input type="text" id="tipoTransacao" className="form-control" value={tipoTransacao} readOnly />
                   </div>
                   <div className="mb-3">
                     <label htmlFor="cnpjDestino" className="form-label">CNPJ Destino</label>
-                    <input
-                      type="text"
-                      id="cnpjDestino"
-                      className="form-control"
-                      value={cnpjDestino}
-                      readOnly
-                    />
+                    <input type="text" id="cnpjDestino" className="form-control" value={cnpjDestino} readOnly />
                   </div>
-                  <div className="mb-4">
-                    <label htmlFor="csvFile" className="form-label">
-                      Selecione o arquivo CSV com dados dos beneficiários:
-                    </label>
-                    <input
-                      type="file"
-                      id="csvFile"
-                      accept=".csv"
-                      onChange={handleFileChange}
-                      className="form-control"
-                      disabled={motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62"}
-                    />
-                    <div className="form-text">
-                      Arquivo deve conter as colunas: Nome, CPF, DataNascimento, etc.
-                    </div>
+                  <div className="mb-3">
+                    <label htmlFor="csvFile" className="form-label">Arquivo CSV com dados dos beneficiários:</label>
+                    <input type="file" id="csvFile" accept=".csv" onChange={handleFileChange} className="form-control"
+                      disabled={motivoNaoEnvioBeneficiarios === "61" || motivoNaoEnvioBeneficiarios === "62"} />
+                    <div className="form-text">Delimitador ponto-e-vírgula (;). Colunas: nome, cpf, dataNascimento, etc.</div>
                   </div>
 
                   <div className="mb-3">
-                    <label htmlFor="xmlFile" className="form-label">Upload XML para validação</label>
-                    <input
-                      type="file"
-                      id="xmlFile"
-                      accept=".xml"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        const reader = new FileReader();
-                        reader.onload = async (event) => {
-                          const xmlContent = event.target.result;
-                          try {
-                            const response = await axios.post('/api/xml/validate', { xml: xmlContent });
-                            if (response.data.isValid) {
-                              alert('XML válido!');
-                            } else {
-                              alert('XML inválido! Erros: ' + response.data.errors.map(e => e.message || e).join(', '));
-                            }
-                          } catch (error) {
-                            alert('Erro ao validar XML: ' + error.message);
-                          }
-                        };
-                        reader.readAsText(file);
-                      }}
-                      className="form-control"
-                    />
+                    <label htmlFor="xmlFile" className="form-label">Validar XML existente contra o schema ANS</label>
+                    <input type="file" id="xmlFile" accept=".xml,.sbx" onChange={handleXMLValidate} className="form-control" />
+                    <div className="form-text">Resultado aparece no log abaixo.</div>
                   </div>
 
                   {error && (
                     <div className="alert alert-danger" role="alert">
-                      <i className="bi bi-exclamation-triangle"></i> {error}
+                      {error}
                     </div>
                   )}
 
-                  <button
-                    className="btn btn-primary btn-lg w-100"
+                  <button className="btn btn-primary btn-lg w-100"
                     onClick={handleUpload}
-                    disabled={loading || (!file && motivoNaoEnvioBeneficiarios === "")}
-                  >
+                    disabled={loading || (!file && motivoNaoEnvioBeneficiarios === "")}>
                     {loading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                        Processando...
-                      </>
+                      <><span className="spinner-border spinner-border-sm me-2" role="status"></span>Processando...</>
                     ) : (
-                      <>
-                        <i className="bi bi-gear"></i> Gerar XML
-                      </>
+                      <>Gerar XML</>
                     )}
                   </button>
 
                   {isValid !== null && (
                     <div className={`alert mt-4 ${isValid ? "alert-success" : "alert-danger"}`}>
                       <h6 className="alert-heading">
-                        {isValid ? (
-                          <><i className="bi bi-check-circle"></i> XML Válido!</>
-                        ) : (
-                          <><i className="bi bi-x-circle"></i> XML Inválido!</>
-                        )}
+                        {isValid ? "XML Válido!" : "XML Inválido!"}
                       </h6>
                       XML {isValid ? "está conforme" : "não está conforme"} os schemas XSD da ANS
                       <br />
-                      <small>Nome do arquivo: {fileName}</small>
+                      <small>Arquivo: {fileName}</small>
                     </div>
                   )}
 
-                  {xml && (
-                    <div className="mt-4">
-                      <button
-                        className="btn btn-success btn-lg w-100"
-                        onClick={handleDownload}
-                      >
-                        <i className="bi bi-download"></i> Download XML
+                  {xml && isValid && (
+                    <div className="mt-3">
+                      <button className="btn btn-success btn-lg w-100" onClick={handleDownload}>
+                        Download XML ({fileName})
                       </button>
-                      <div className="mt-2 text-center">
-                        <small className="text-muted">Arquivo será salvo como: {fileName}</small>
-                      </div>
                     </div>
                   )}
+
+                  <div className="mt-3">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <label className="form-label mb-0"><strong>Log de Processamento</strong></label>
+                      {logLines.length > 0 && (
+                        <button className="btn btn-sm btn-outline-secondary" onClick={clearLog}>Limpar</button>
+                      )}
+                    </div>
+                    <LogMemo lines={logLines} />
+                  </div>
                 </div>
 
                 <div className="card-footer text-muted">

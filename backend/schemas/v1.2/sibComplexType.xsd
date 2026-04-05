@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Definição do formato de troca de mensagens SIB-XML - Versão 1.2-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.2">
+	<xsd:include schemaLocation="sibSimpleType.xsd"/>
+	<xsd:complexType name="ct_identificacao_beneficiario_conferencia">
+		<xsd:sequence>
+			<xsd:element name="cpf" type="st_nr_cpf" minOccurs="0"/>
+			<xsd:element name="dn" type="st_nr_dn" minOccurs="0"/>
+			<xsd:element name="pisPasep" type="st_nr_pis_pasep" minOccurs="0"/>
+			<xsd:element name="cns" type="st_nr_cartao_nacional_saude" minOccurs="0"/>
+			<xsd:element name="nome" type="xsd:string"/>
+			<xsd:element name="sexo" type="st_cd_sexo"/>
+			<xsd:element name="dataNascimento" type="st_dt_nascimento"/>
+			<xsd:element name="nomeMae" type="xsd:string" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_endereco_beneficiario_conferencia">
+		<xsd:sequence>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="logradouro" type="st_no_logradouro" minOccurs="0"/>
+				<xsd:element name="numero" type="st_nr_logradouro" minOccurs="0"/>
+				<xsd:element name="complemento" type="st_no_complemento_logradouro" minOccurs="0"/>
+				<xsd:element name="bairro" type="st_no_bairro" minOccurs="0"/>
+				<xsd:element name="codigoMunicipio" type="st_cd_municipio_ibge" minOccurs="0"/>
+				<xsd:element name="codigoMunicipioResidencia" type="st_cd_municipio_ibge" minOccurs="0"/>
+				<xsd:element name="cep" type="st_nr_cep" minOccurs="0"/>
+				<xsd:element name="tipoEndereco" type="st_tp_endereco" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:element name="resideExterior" type="st_in_reside_exterior" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_vinculo_conferencia">
+		<xsd:sequence>
+			<xsd:element name="codigoBeneficiario" type="st_cd_beneficiario_operadora"/>
+			<xsd:element name="relacaoDependencia" type="st_cd_tipo_relacao_dependencia" minOccurs="0"/>
+			<xsd:element name="ccoBeneficiarioTitular" type="st_cd_cco" minOccurs="0"/>
+			<xsd:element name="dataPrimeiraContratacao" type="st_dt_primeira_contratacao" minOccurs="0"/>
+			<xsd:element name="dataContratacao" type="st_dt_adesao"/>
+			<xsd:element name="dataReativacao" type="st_dt_reativacao" minOccurs="0"/>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="dataCancelamento" type="st_dt_cancelamento" minOccurs="0"/>
+				<xsd:element name="motivoCancelamento" type="st_cd_motivo_cancelamento" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:choice minOccurs="0">
+				<xsd:sequence>
+					<xsd:element name="numeroPlanoANS" type="st_nr_plano_rps"/>
+					<xsd:element name="numeroPlanoPortabilidade" type="st_nr_plano_rps" minOccurs="0"/>
+				</xsd:sequence>
+				<xsd:element name="numeroPlanoOperadora" type="st_nr_plano_operadora"/>
+			</xsd:choice>
+			<xsd:element name="coberturaParcialTemporaria" type="st_in_cobertura_parcial_temporaria" minOccurs="0"/>
+			<xsd:element name="itensExcluidosCobertura" type="st_in_itens_excluidos_cobertura" minOccurs="0"/>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="cnpjEmpresaContratante" type="st_nr_cnpj"/>
+				<xsd:element name="ceiEmpresaContratante" type="st_nr_cei"/>
+				<xsd:element name="caepfEmpresaContratante" type="st_nr_caepf"/>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_inclusao_beneficiario">
+		<xsd:sequence>
+			<xsd:element name="identificacao" type="ct_identificacao_beneficiario"/>
+			<xsd:element name="endereco" type="ct_endereco_beneficiario_inclusao"/> <!-- alterado 23/12/14 -->
+			<xsd:element name="vinculo" type="ct_vinculo_inclusao"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_identificacao_beneficiario">
+		<xsd:sequence>
+			<xsd:element name="cpf" type="st_nr_cpf" minOccurs="0"/>
+			<xsd:element name="dn" type="st_nr_dn" minOccurs="0"/>
+			<xsd:element name="pisPasep" type="st_nr_pis_pasep" minOccurs="0"/>
+			<xsd:element name="cns" type="st_nr_cartao_nacional_saude" minOccurs="0"/>
+			<xsd:element name="nome" type="st_no_pessoa"/>
+			<xsd:element name="sexo" type="st_cd_sexo"/>
+			<xsd:element name="dataNascimento" type="st_dt_nascimento"/>
+			<xsd:element name="nomeMae" type="st_no_pessoa" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_identificacao_beneficiario_retificacao"> <!--incluido 14/04/2015 -->
+		<xsd:sequence>
+			<xsd:element name="cpf" type="st_nr_cpf" minOccurs="0"/>
+			<xsd:element name="dn" type="st_nr_dn" minOccurs="0"/>
+			<xsd:element name="pisPasep" type="st_nr_pis_pasep" minOccurs="0"/>
+			<xsd:element name="cns" type="st_nr_cartao_nacional_saude" minOccurs="0"/>
+			<xsd:element name="nome" type="st_no_pessoa" minOccurs="0"/>
+			<xsd:element name="sexo" type="st_cd_sexo" minOccurs="0"/>
+			<xsd:element name="dataNascimento" type="st_dt_nascimento" minOccurs="0"/>
+			<xsd:element name="nomeMae" type="st_no_pessoa" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>	
+	<xsd:complexType name="ct_endereco_beneficiario_inclusao"> <!-- incluido 23/12/14 -->
+		<xsd:sequence>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="logradouro" type="st_no_logradouro" minOccurs="0"/>
+				<xsd:element name="numero" type="st_nr_logradouro" minOccurs="0"/>
+				<xsd:element name="complemento" type="st_no_complemento_logradouro" minOccurs="0"/>
+				<xsd:element name="bairro" type="st_no_bairro" minOccurs="0"/>
+				<xsd:element name="codigoMunicipio" type="st_cd_municipio_ibge"/>
+				<xsd:element name="codigoMunicipioResidencia" type="st_cd_municipio_ibge" minOccurs="0"/>
+				<xsd:element name="cep" type="st_nr_cep" minOccurs="0"/>
+				<xsd:element name="tipoEndereco" type="st_tp_endereco" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:element name="resideExterior" type="st_in_reside_exterior" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>	
+	<xsd:complexType name="ct_endereco_beneficiario_retificacao"> <!-- incluido 14/04/2015 -->
+		<xsd:sequence>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="logradouro" type="st_no_logradouro" minOccurs="0"/>
+				<xsd:element name="numero" type="st_nr_logradouro" minOccurs="0"/>
+				<xsd:element name="complemento" type="st_no_complemento_logradouro" minOccurs="0"/>
+				<xsd:element name="bairro" type="st_no_bairro" minOccurs="0"/>
+				<xsd:element name="codigoMunicipio" type="st_cd_municipio_ibge" minOccurs="0"/>
+				<xsd:element name="codigoMunicipioResidencia" type="st_cd_municipio_ibge" minOccurs="0"/>
+				<xsd:element name="cep" type="st_nr_cep" minOccurs="0"/>
+				<xsd:element name="tipoEndereco" type="st_tp_endereco" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:element name="resideExterior" type="st_in_reside_exterior" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>	
+	<xsd:complexType name="ct_endereco_beneficiario">
+		<xsd:sequence>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="logradouro" type="st_no_logradouro"/>
+				<xsd:element name="numero" type="st_nr_logradouro"/>
+				<xsd:element name="complemento" type="st_no_complemento_logradouro" minOccurs="0"/>
+				<xsd:element name="bairro" type="st_no_bairro" minOccurs="0"/>
+				<xsd:element name="codigoMunicipio" type="st_cd_municipio_ibge"/>
+				<xsd:element name="codigoMunicipioResidencia" type="st_cd_municipio_ibge" minOccurs="0"/>
+				<xsd:element name="cep" type="st_nr_cep"/>
+				<xsd:element name="tipoEndereco" type="st_tp_endereco"/>
+			</xsd:sequence>
+			<xsd:element name="resideExterior" type="st_in_reside_exterior"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_vinculo_inclusao">
+		<xsd:sequence>
+			<xsd:element name="codigoBeneficiario" type="st_cd_beneficiario_operadora"/>
+			<xsd:element name="relacaoDependencia" type="st_cd_tipo_relacao_dependencia"/>
+			<xsd:element name="codigoBeneficiarioTitular" type="st_cd_beneficiario_operadora" minOccurs="0"/>
+			<xsd:element name="dataContratacao" type="st_dt_adesao"/>
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="numeroPlanoANS" type="st_nr_plano_rps"/>
+					<xsd:element name="numeroPlanoPortabilidade" type="st_nr_plano_rps" minOccurs="0"/>
+				</xsd:sequence>
+				<xsd:element name="numeroPlanoOperadora" type="st_nr_plano_operadora"/>
+			</xsd:choice>
+			<xsd:element name="coberturaParcialTemporaria" type="st_in_cobertura_parcial_temporaria"  minOccurs="0"/> <!-- alterado 23/12/14 -->
+			<xsd:element name="itensExcluidosCobertura" type="st_in_itens_excluidos_cobertura"  minOccurs="0"/> <!-- alterado 23/12/14 -->
+			<xsd:choice minOccurs="0">
+				<xsd:element name="cnpjEmpresaContratante" type="st_nr_cnpj"/>
+				<xsd:element name="ceiEmpresaContratante" type="st_nr_cei"/>
+				<xsd:element name="caepfEmpresaContratante" type="st_nr_caepf"/>
+				
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_vinculo_retificacao"> <!--  alterado 14/04/2015 -->
+		<xsd:sequence minOccurs="0">
+			<xsd:element name="codigoBeneficiario" type="st_cd_beneficiario_operadora" minOccurs="0"/>
+			<xsd:element name="relacaoDependencia" type="st_cd_tipo_relacao_dependencia" minOccurs="0"/>
+			<xsd:element name="codigoBeneficiarioTitular" type="st_cd_beneficiario_operadora" minOccurs="0"/>
+			<xsd:element name="dataContratacao" type="st_dt_adesao"  minOccurs="0"/>
+			<xsd:element name="dataReativacao" type="st_dt_reativacao" minOccurs="0"/>
+			<xsd:sequence minOccurs="0">
+				<xsd:element name="dataCancelamento" type="st_dt_cancelamento" minOccurs="0"/>
+				<xsd:element name="motivoCancelamento" type="st_cd_motivo_cancelamento" minOccurs="0"/>
+			</xsd:sequence>
+			<xsd:choice minOccurs="0">
+				<xsd:sequence minOccurs="0">
+					<xsd:element name="numeroPlanoANS" type="st_nr_plano_rps" minOccurs="0"/>
+					<xsd:element name="numeroPlanoPortabilidade" type="st_nr_plano_rps" minOccurs="0"/>
+				</xsd:sequence>
+				<xsd:element name="numeroPlanoOperadora" type="st_nr_plano_operadora" minOccurs="0"/>
+			</xsd:choice>
+			<xsd:element name="coberturaParcialTemporaria" type="st_in_cobertura_parcial_temporaria" minOccurs="0"/>
+			<xsd:element name="itensExcluidosCobertura" type="st_in_itens_excluidos_cobertura" minOccurs="0"/>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="cnpjEmpresaContratante" type="st_nr_cnpj" minOccurs="0"/>
+				<xsd:element name="ceiEmpresaContratante" type="st_nr_cei" minOccurs="0"/>
+				<xsd:element name="caepfEmpresaContratante" type="st_nr_caepf" minOccurs="0"/>
+				
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_cabecalho_transacao">
+		<xsd:sequence>
+			<xsd:element name="identificacaoTransacao">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="tipoTransacao" type="st_tp_transacao"/>
+						<xsd:element name="sequencialTransacao" type="st_nr_sequencial_transacao"/>
+						<xsd:element name="dataHoraRegistroTransacao" type="xsd:dateTime"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="falhaNegocio" type="ct_falha_negocio" minOccurs="0"/>
+			<xsd:element name="origem">
+				<xsd:complexType>
+					<xsd:choice>
+						<xsd:element name="registroANS" type="st_nr_registro_ans"/>
+						<xsd:element name="cnpj" type="st_nr_cnpj"/>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="destino">
+				<xsd:complexType>
+					<xsd:choice>
+						<xsd:element name="registroANS" type="st_nr_registro_ans"/>
+						<xsd:element name="cnpj" type="st_nr_cnpj"/>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="versaoPadrao" type="st_nr_versao"/>
+			<xsd:element name="identificacaoSoftwareGerador" type="ct_identificacao_software_gerador"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_identificacao_software_gerador">
+		<xsd:sequence>
+			<xsd:element name="nomeAplicativo" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Nome do aplicativo gerador</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="versaoAplicativo" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Versão do aplicativo gerador</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="fabricanteAplicativo" type="xsd:string">
+				<xsd:annotation>
+					<xsd:documentation>Fabricante do aplicativo gerador</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_falha_negocio">
+		<xsd:sequence>
+			<xsd:element name="falha" minOccurs="0" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="codigoFalha" type="st_falha_negocio">
+							<xsd:annotation>
+								<xsd:documentation>Código da falha</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+						<xsd:element name="descricaoFalha" type="st_descricao_falha">
+							<xsd:annotation>
+								<xsd:documentation>Descrição da falha</xsd:documentation>
+							</xsd:annotation>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_epilogo">
+		<xsd:sequence>
+			<xsd:element name="hash">
+				<xsd:simpleType>
+					<xsd:restriction base="st_hash">
+						<xsd:minLength value="1"/>
+					</xsd:restriction>
+				</xsd:simpleType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_retificacao_beneficiario">
+		<xsd:sequence>
+			<xsd:element name="cco" type="st_cd_cco"/>
+			<xsd:element name="identificacao" type="ct_identificacao_beneficiario_retificacao"/>
+			<xsd:element name="endereco" type="ct_endereco_beneficiario_retificacao"/>
+			<xsd:element name="vinculo" type="ct_vinculo_retificacao"/>
+			<xsd:element name="codigoProcedimentoAdministrativo" type="st_cd_repad" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_exclusao_beneficiario">
+		<xsd:sequence>
+			<xsd:element name="cco" type="st_cd_cco"/>
+			<xsd:element name="dataCancelamento" type="st_dt_cancelamento"/>
+			<xsd:element name="motivoCancelamento" type="st_cd_motivo_cancelamento"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_nao_envio_beneficiarios">
+		<xsd:sequence>
+			<xsd:element name="motivoNaoEnvioBeneficiarios" type="st_cd_motivo_nao_envio_beneficiarios"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_beneficiarios">
+		<xsd:choice maxOccurs="unbounded">
+			<xsd:element name="inclusao" type="ct_inclusao_beneficiario"/>
+			<xsd:element name="retificacao" type="ct_retificacao_beneficiario"/>
+			<xsd:element name="reativacao" type="ct_reativacao"/>
+			<xsd:element name="mudancaContratual" type="ct_mudanca_contratual"/>
+			<xsd:element name="cancelamento" type="ct_exclusao_beneficiario"/>
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="ct_resumo_processamento">
+		<xsd:sequence>
+			<xsd:element name="protocoloProcessamento">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="numeroProtocolo" type="xsd:string"/>
+						<xsd:element name="nomeArquivo" type="xsd:string"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="registrosRejeitados" minOccurs="0">
+				<xsd:complexType>
+					<xsd:choice maxOccurs="unbounded">
+						<xsd:element name="registroRejeitado">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_erro"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="registrosIncluidos" minOccurs="0">
+				<xsd:complexType>
+					<xsd:choice maxOccurs="unbounded">
+						<xsd:element name="registroIncluido">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_cco">
+										<xsd:attribute name="codigoBeneficiario" type="st_cd_beneficiario_operadora" use="required"/>
+									</xsd:extension>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="consolidado">
+				<xsd:complexType>
+					<xsd:sequence maxOccurs="2">
+						<xsd:element name="consolidadoErroProcessamento" minOccurs="0">
+							<xsd:complexType>
+								<xsd:sequence maxOccurs="unbounded">
+									<xsd:element name="erro" type="ct_erro_consolidado"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="consolidadoProcessamento">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="consolidadoInclusao" type="ct_consolidado_processamento"/>
+									<xsd:element name="consolidadoRetificacao" type="ct_consolidado_processamento"/>
+									<xsd:element name="consolidadoMudancaContratual" type="ct_consolidado_processamento"/>
+									<xsd:element name="consolidadoReativacao" type="ct_consolidado_processamento"/>
+									<xsd:element name="consolidadoCancelamento" type="ct_consolidado_processamento"/>
+									<xsd:element name="consolidadoSemMovimentacao" type="ct_consolidado_processamento"/>
+									<xsd:element name="consolidadoTotal" type="ct_consolidado_processamento"/>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_erro">
+		<xsd:sequence>
+			<xsd:element name="campoErro" maxOccurs="unbounded">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="codigoCampo" type="st_cd_campo"/>
+						<xsd:element name="descricaoCampo" type="st_no_campo"/>
+						<xsd:element name="valorCampo" type="xsd:string" minOccurs="0"/>
+						<xsd:sequence maxOccurs="unbounded">
+							<xsd:element name="erro" type="ct_erro_generico"/>
+						</xsd:sequence>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="cco" type="st_cd_cco" use="optional"/>
+		<xsd:attribute name="codigoBeneficiario" type="st_cd_beneficiario_operadora" use="optional"/>
+		<xsd:attribute name="codigoTipoMovimento" type="st_cd_tipo_movimento" use="required"/>
+		<xsd:attribute name="tipoMovimento" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="ct_cco">
+		<xsd:sequence>
+			<xsd:element name="cco" type="st_cd_cco"/>
+			<xsd:element name="nomeBeneficiario" type="st_no_pessoa"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_consolidado_processamento">
+		<xsd:sequence>
+			<xsd:element name="quantidadeRegistros" type="xsd:integer"/>
+			<xsd:element name="quantidadeProcessados" type="xsd:integer"/>
+			<xsd:element name="quantidadeRejeitados" type="xsd:integer"/>
+			<xsd:element name="percentualAcerto" type="xsd:double"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_erro_consolidado">
+		<xsd:sequence>
+			<xsd:element name="codigoErro" type="st_cd_erro"/>
+			<xsd:element name="mensagemErro" type="st_no_erro"/>
+			<xsd:element name="quantidadeOcorrenciaErro" type="xsd:integer"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_reativacao">
+		<xsd:sequence>
+			<xsd:element name="cco" type="st_cd_cco"/>
+			<xsd:element name="dataReativacao" type="st_dt_reativacao"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_conferencia">
+		<xsd:sequence maxOccurs="unbounded">
+			<xsd:element name="beneficiario">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="identificacao">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_identificacao_beneficiario_conferencia"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="endereco">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_endereco_beneficiario_conferencia"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="vinculo">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_vinculo_conferencia"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="situacaoTransfrencia" type="st_situacao_transferencia" minOccurs="0"/>
+					</xsd:sequence>
+					<xsd:attribute name="cco" use="required"/>
+					<xsd:attribute name="situacao" use="required"/>
+					<xsd:attribute name="dataAtualizacao"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_conferencia_transferencia">
+		<xsd:sequence maxOccurs="unbounded">
+			<xsd:element name="beneficiario">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="identificacao">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_identificacao_beneficiario_conferencia"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="endereco">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_endereco_beneficiario_conferencia"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+						<xsd:element name="vinculo">
+							<xsd:complexType>
+								<xsd:complexContent>
+									<xsd:extension base="ct_vinculo_conferencia"/>
+								</xsd:complexContent>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="cco" use="required"/>
+					<xsd:attribute name="situacao" use="required"/>
+					<xsd:attribute name="dataAtualizacao"/>
+					<xsd:attribute name="situacaoTransferencia" type="st_situacao_transferencia"/>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_erro_generico">
+		<xsd:sequence>
+			<xsd:element name="codigoErro" type="st_cd_erro"/>
+			<xsd:element name="mensagemErro" type="st_no_erro"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_mudanca_contratual">
+		<xsd:sequence>
+			<xsd:element name="cco" type="st_cd_cco"/>
+			<xsd:element name="relacaoDependencia" type="st_cd_tipo_relacao_dependencia"/>
+			<xsd:element name="codigoBeneficiarioTitular" type="st_cd_beneficiario_operadora" minOccurs="0"/>
+			<xsd:element name="dataContratacao" type="st_dt_adesao"/>
+			<xsd:choice>
+				<xsd:sequence>
+					<xsd:element name="numeroPlanoANS" type="st_nr_plano_rps"/>
+					<xsd:element name="numeroPlanoPortabilidade" type="st_nr_plano_rps" minOccurs="0"/>
+				</xsd:sequence>
+				<xsd:element name="numeroPlanoOperadora" type="st_nr_plano_operadora"/>
+			</xsd:choice>
+			<xsd:element name="coberturaParcialTemporaria" type="st_in_cobertura_parcial_temporaria" minOccurs="0"/>
+			<xsd:element name="itensExcluidosCobertura" type="st_in_itens_excluidos_cobertura" minOccurs="0"/>
+			<xsd:choice minOccurs="0">
+				<xsd:element name="cnpjEmpresaContratante" type="st_nr_cnpj"/>
+				<xsd:element name="ceiEmpresaContratante" type="st_nr_cei"/>
+				<xsd:element name="caepfEmpresaContratante" type="st_nr_caepf"/>				
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="ct_tab">
+		<xsd:sequence>
+			<xsd:element name="dataExecucaoProcesso" type="st_dt_execucao_processo"/>
+			<xsd:element name="dataEfetivaTransferencia" type="st_dt_efetiva_transferencia"/>
+			<xsd:element name="regsAnsOperadoraCedente" type="st_nr_registro_ans"/>
+			<xsd:element name="regsAnsOperadoraAdquirente" type="st_nr_registro_ans"/>
+		</xsd:sequence>
+		<xsd:attribute name="id" type="xsd:long"/>
+	</xsd:complexType>
+</xsd:schema>

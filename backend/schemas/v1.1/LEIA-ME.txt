@@ -1,0 +1,6 @@
+Coloque aqui os arquivos XSD da versão 1.1 do SIB obtidos no site da ANS:
+  - sib.xsd
+  - sibSimpleType.xsd
+  - sibComplexType.xsd
+
+Link oficial: https://www.gov.br/ans/pt-br/arquivos/assuntos/espaco-da-operadora-de-plano-de-saude/aplicativos-ans/sib/

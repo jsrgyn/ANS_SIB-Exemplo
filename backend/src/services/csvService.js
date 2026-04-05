@@ -68,45 +68,40 @@ const mapTipoMovimento = (tipoMovimentacao) => {
   return map[tipoMovimentacao] || "inclusao";
 };
 
-// Função para validar dados obrigatórios
+// Função para validar dados obrigatórios — retorna Array<{campo, mensagem}>
 const validateRequiredFields = (row, tipoMovimento) => {
   const errors = [];
 
   if (!row.sexo || !["1", "3"].includes(row.sexo)) {
-    errors.push("Sexo é obrigatório e deve ser 1 (masculino) ou 3 (feminino)");
+    errors.push({ campo: "sexo", mensagem: "Obrigatório e deve ser 1 (masculino) ou 3 (feminino)" });
   }
 
   if (!row.dataNascimento) {
-    errors.push("Data de nascimento é obrigatória");
+    errors.push({ campo: "dataNascimento", mensagem: "Data de nascimento é obrigatória" });
   }
 
   // Validações específicas por tipo de movimento
   if (tipoMovimento === "inclusao") {
-    
-    // Validações comuns para todos os tipos
     if (!row.nome || row.nome.trim().length < 3) {
-      errors.push("Nome é obrigatório e deve ter pelo menos 3 caracteres");
+      errors.push({ campo: "nome", mensagem: "Obrigatório e deve ter pelo menos 3 caracteres" });
     }
-
     if (!row.codigoBeneficiario) {
-      errors.push("Código do beneficiário é obrigatório para inclusão");
+      errors.push({ campo: "codigoBeneficiario", mensagem: "Obrigatório para inclusão" });
     }
     if (!row.dataContratacao) {
-      errors.push("Data de contratação é obrigatória para inclusão");
+      errors.push({ campo: "dataContratacao", mensagem: "Obrigatória para inclusão" });
     }
     if (!row.numeroPlanoANS) {
-      errors.push("Número do plano ANS é obrigatório para inclusão");
+      errors.push({ campo: "numeroPlanoANS", mensagem: "Obrigatório para inclusão" });
     }
     if (!row.codigoMunicipio) {
-      errors.push("Código do município é obrigatório para inclusão");
+      errors.push({ campo: "codigoMunicipio", mensagem: "Obrigatório para inclusão" });
     }
   }
 
   if (tipoMovimento === "retificacao" || tipoMovimento === "cancelamento") {
     if (!row.cco || row.cco.length !== 12) {
-      errors.push(
-        "CCO é obrigatório e deve ter 12 dígitos para retificação/cancelamento",
-      );
+      errors.push({ campo: "cco", mensagem: "Obrigatório e deve ter 12 dígitos para retificação/cancelamento" });
     }
   }
 
@@ -117,6 +112,7 @@ export const parseCSVToJSON = (filePath) => {
   return new Promise((resolve, reject) => {
     const results = [];
     const errors = [];
+    let lineNumber = 0;
 
     fs.createReadStream(filePath)
       .pipe(
@@ -129,14 +125,15 @@ export const parseCSVToJSON = (filePath) => {
         }),
       )
       .on("data", (row) => {
+        lineNumber++;
         try {
           const tipoMovimento = mapTipoMovimento(row.tipo_movimentacao);
 
           // Valida campos obrigatórios
           const validationErrors = validateRequiredFields(row, tipoMovimento);
           if (validationErrors.length > 0) {
-            errors.push(
-              `Linha ${results.length + 1}: ${validationErrors.join(", ")}`,
+            validationErrors.forEach(({ campo, mensagem }) =>
+              errors.push({ linha: lineNumber, campo, mensagem }),
             );
             return;
           }
@@ -207,9 +204,7 @@ export const parseCSVToJSON = (filePath) => {
             movimento.dados.identificacao.dataNascimento,
           );
           if (dataNascimento > hoje) {
-            errors.push(
-              `Linha ${results.length + 1}: Data de nascimento não pode ser futura`,
-            );
+            errors.push({ linha: lineNumber, campo: "dataNascimento", mensagem: "Data de nascimento não pode ser futura" });
             return;
           }
 
@@ -218,27 +213,23 @@ export const parseCSVToJSON = (filePath) => {
               movimento.dados.vinculo.dataContratacao,
             );
             if (dataContratacao > hoje) {
-              errors.push(
-                `Linha ${results.length + 1}: Data de contratação não pode ser futura`,
-              );
+              errors.push({ linha: lineNumber, campo: "dataContratacao", mensagem: "Data de contratação não pode ser futura" });
               return;
             }
           }
 
           results.push(movimento);
         } catch (error) {
-          errors.push(
-            `Linha ${results.length + 1}: Erro ao processar - ${error.message}`,
-          );
+          errors.push({ linha: lineNumber, campo: "-", mensagem: `Erro ao processar: ${error.message}` });
         }
       })
       .on("end", () => {
-        console.log(`CSV processado: ${results.length} registros válidos`);
+        console.log(`CSV processado: ${results.length} registros válidos, ${errors.length} rejeitados`);
         if (errors.length > 0) {
           console.warn(`Foram encontrados ${errors.length} erros:`);
-          errors.forEach((error) => console.warn(`  ${error}`));
+          errors.forEach((e) => console.warn(`  Linha ${e.linha} (${e.campo}): ${e.mensagem}`));
         }
-        resolve(results);
+        resolve({ results, errors });
       })
       .on("error", (err) => {
         console.error("Erro ao ler CSV:", err);
