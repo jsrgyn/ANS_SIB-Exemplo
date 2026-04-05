@@ -49,7 +49,7 @@ function validateCNS(cns) {
   if (!cns) return null;
   const digits = cns.replace(/\D/g, "");
   if (digits.length !== 15) return "Deve conter 15 dígitos";
-  if (!["1", "2", "7"].includes(digits[0])) return "Primeiro dígito deve ser 1, 2 ou 7";
+  if (!["1", "2", "7", "8", "9"].includes(digits[0])) return "Primeiro dígito deve ser 1, 2, 7, 8 ou 9";
 
   const weights = [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
   const sum = digits.split("").reduce((acc, d, i) => acc + Number(d) * weights[i], 0);
