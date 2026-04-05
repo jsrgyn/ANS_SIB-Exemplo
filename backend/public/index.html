@@ -203,16 +203,33 @@
           try {
             const response = await axios.post("/api/xml/validate", { xml: xmlContent });
             if (response.data.isValid) {
-              addLog(["[OK] XML válido conforme schema XSD da ANS"]);
+              addLog([
+                "========================================",
+                "[OK] XML válido conforme schema XSD da ANS",
+                "========================================",
+              ]);
             } else {
-              const errLog = [`[ERRO] XML inválido — ${(response.data.errors || []).length} erro(s):`];
-              (response.data.errors || []).forEach((e) =>
-                errLog.push(`  ${e.formatted || e.message || String(e)}`)
-              );
+              const errors = response.data.errors || [];
+              const errLog = [
+                "========================================",
+                `[ERRO] XML inválido — ${errors.length} erro(s) encontrado(s):`,
+                "----------------------------------------",
+              ];
+              errors.forEach((e, i) => {
+                const line = e.line > 0 ? `Linha ${e.line}` : "Linha ?";
+                const col  = e.column > 0 ? `, Col ${e.column}` : "";
+                const msg  = (e.message || String(e)).trim();
+                errLog.push(`  [${i + 1}] ${line}${col}: ${msg}`);
+              });
+              errLog.push("========================================");
               addLog(errLog);
             }
           } catch (err) {
-            addLog([`[ERRO] Falha ao validar XML: ${err.message}`]);
+            if (err.response?.status === 413) {
+              addLog(["[ERRO] Arquivo XML muito grande para validação. Reduza o tamanho do arquivo."]);
+            } else {
+              addLog([`[ERRO] Falha ao validar XML: ${err.message}`]);
+            }
           }
         };
         reader.readAsText(xmlFile);

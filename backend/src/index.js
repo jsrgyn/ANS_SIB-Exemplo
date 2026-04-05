@@ -12,9 +12,13 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Middleware
+const MAX_BODY_SIZE = process.env.MAX_FILE_SIZE
+  ? `${Math.ceil(Number.parseInt(process.env.MAX_FILE_SIZE) / (1024 * 1024))}mb`
+  : "50mb";
+
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: MAX_BODY_SIZE }));
+app.use(express.urlencoded({ extended: true, limit: MAX_BODY_SIZE }));
 
 // Servir arquivos estáticos
 app.use(express.static(path.join(__dirname, "../public")));
