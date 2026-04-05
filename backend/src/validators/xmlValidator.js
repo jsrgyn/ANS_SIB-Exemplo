@@ -1,6 +1,6 @@
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { validateXML as xmllintValidate } from "xmllint-wasm";
 import { logger } from "../utils/logger.js";
 
@@ -18,19 +18,17 @@ export const validateXML = async (xml) => {
     return { isValid: false, errors: [{ line: 0, column: 0, message: msg, formatted: `[XSD] ${msg}` }] };
   }
 
-  // Load the main schema and any included schemas so xmllint-wasm can resolve them
-  const schemaFiles = fs.readdirSync(schemaDir)
-    .filter((f) => f.endsWith(".xsd"))
+  // Load main schema + included schemas; preload makes includes resolvable by xmllint-wasm
+  const mainSchema = fs.readFileSync(xsdPath, "latin1");
+  const preload = fs.readdirSync(schemaDir)
+    .filter((f) => f.endsWith(".xsd") && f !== "sib.xsd")
     .map((f) => ({ fileName: f, contents: fs.readFileSync(path.join(schemaDir, f), "latin1") }));
 
   try {
     const result = await xmllintValidate({
       xml: [{ fileName: "document.xml", contents: xml }],
-      schema: schemaFiles.map((f) => f.contents),
-      // Pass all XSD files so includes resolve correctly
-      preload: schemaFiles
-        .filter((f) => f.fileName !== "sib.xsd")
-        .map((f) => ({ fileName: f.fileName, contents: f.contents })),
+      schema: mainSchema,
+      preload,
     });
 
     if (result.valid) {
